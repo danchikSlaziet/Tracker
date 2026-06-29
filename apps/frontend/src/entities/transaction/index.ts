@@ -1,0 +1,1 @@
+export type { Transaction, CreateTransactionDto, TransactionType } from '@finance/shared-types'

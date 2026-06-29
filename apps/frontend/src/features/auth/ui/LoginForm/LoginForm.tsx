@@ -1,0 +1,44 @@
+import { Button, Input } from '@/shared/ui'
+import styles from './LoginForm.module.css'
+import { useLoginForm } from './useLoginForm'
+import { Link } from 'react-router-dom'
+import { ROUTES } from '@/shared/config/routes'
+
+export function LoginForm() {
+    const { form, onSubmit, isPending } = useLoginForm()
+    const { register, formState: { errors } } = form
+    return (
+        <form className={styles.form} onSubmit={onSubmit}>
+            <h2 className={styles.title}>Вход в аккаунт</h2>
+            <Input
+                id="email"
+                type="email"
+                label="Email"
+                placeholder="name@example.com"
+                error={errors.email?.message}
+                data-testid="email-input"
+                {...register('email')} /* отдаст onChange, onBlur, ref и name */
+            />
+            <Input
+                id="password"
+                type="password"
+                label="Пароль"
+                placeholder="••••••"
+                error={errors.password?.message}
+                data-testid="password-input"
+                {...register('password')}
+            />
+
+            {errors.root && (
+                <p className={styles.rootError}>{errors.root.message}</p>
+            )}
+
+            <Button type="submit" isLoading={isPending} className={styles.submitBtn} data-testid="login-submit-btn">
+                Войти
+            </Button>
+            <div className={styles.footerText}>
+                Нет аккаунта? <Link to={ROUTES.REGISTER} className={styles.link}>Зарегистрируйтесь</Link>
+            </div>
+        </form>
+    )
+}

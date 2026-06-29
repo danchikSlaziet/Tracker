@@ -1,0 +1,20 @@
+.chartWrapper {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Высота ОБЯЗАТЕЛЬНА, иначе ResponsiveContainer схлопнется в 0px */
+.chartContainer {
+  height: 250px; 
+  width: 100%;
+}

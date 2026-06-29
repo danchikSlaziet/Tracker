@@ -1,0 +1,43 @@
+/* Светлая тема */
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --accent-primary: #111827;
+  --accent-hover: #374151;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --input-bg: #ffffff;
+  --danger: #ef4444;
+  --success: #10b981;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] {
+  --bg-primary: #0f0f13;
+  --bg-secondary: #13131f;
+  --text-primary: #f1f1f3;
+  --text-secondary: #9ca3af;
+  --border-color: #1f2937;
+  --accent-primary: #ffffff;
+  --accent-hover: #e5e7eb;
+  --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --danger: #ef4444;
+  --success: #10b981;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+  font-family: Inter, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
