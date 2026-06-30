@@ -75,6 +75,7 @@ jobs:
       JWT_SECRET: "test-secret-key-for-ci"
       PORT: 3000
       VITE_API_URL: "http://localhost:3000/api"
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

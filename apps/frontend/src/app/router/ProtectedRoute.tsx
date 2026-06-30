@@ -1,13 +1,24 @@
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useMe } from '@/features/auth/api/useMe'
 import { PageLoader } from '@/shared/ui'
 import { ROUTES } from '@/shared/config/routes'
 
 export function ProtectedRoute() {
-  const { isLoading, isError } = useMe()
+  const { data, isLoading, isError } = useMe()
+  const location = useLocation()
 
   if (isLoading) return <PageLoader />
-  if (isError) return <Navigate to={ROUTES.LOGIN} replace />
+
+  if (isError || !data?.user) return <Navigate to={ROUTES.LOGIN} replace />
+
+  if (!data.user.isVerified && location.pathname !== ROUTES.VERIFY) {
+    return <Navigate to={ROUTES.VERIFY} replace />
+  }
+
+  // Защита от дурака: если верифицирован, но лезет на /verify -> на главную
+  if (data.user.isVerified && location.pathname === ROUTES.VERIFY) {
+    return <Navigate to={ROUTES.HOME} replace />
+  }
 
   return <Outlet />
 }

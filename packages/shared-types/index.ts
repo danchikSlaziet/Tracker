@@ -24,6 +24,7 @@ export type CreateTransactionDto = Omit<Transaction, 'id' | 'createdAt' | 'categ
 export interface UserDto {
   id: string
   email: string
+  isVerified: boolean
 }
 export interface AuthResponse {
   user: UserDto
