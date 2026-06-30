@@ -20,7 +20,7 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
   return (
     <div className={styles.container}>
       {transactions.map((tx) => (
-        <div data-testid="transaction-item" key={tx.id} className={styles.transactionCard}>
+        <div data-test-id="transaction-item" key={tx.id} className={styles.transactionCard}>
           <div className={styles.leftInfo}>
             <div
               className={styles.iconBox}
@@ -47,7 +47,7 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
               className={styles.deleteBtn}
               onClick={() => deleteTransaction(tx.id)}
               disabled={isDeleting}
-              data-testid="delete-transaction-btn"
+              data-test-id="delete-transaction-btn"
             >
               Удалить
             </button>

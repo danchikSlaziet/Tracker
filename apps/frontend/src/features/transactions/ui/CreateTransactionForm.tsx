@@ -21,10 +21,10 @@ export const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps)
 
       <div className={styles.radioGroup}>
         <label className={styles.radioLabel}>
-          <input type="radio" value="expense" data-testid="type-expense-radio" {...register('type')} /> Расход
+          <input type="radio" value="expense" data-test-id="type-expense-radio" {...register('type')} /> Расход
         </label>
         <label className={styles.radioLabel}>
-          <input type="radio" value="income" data-testid="type-income-radio" {...register('type')} /> Доход
+          <input type="radio" value="income" data-test-id="type-income-radio" {...register('type')} /> Доход
         </label>
       </div>
 
@@ -36,7 +36,7 @@ export const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps)
           step="0.01"
           id='amount'
           placeholder="Например: 1500"
-          data-testid="amount-input"
+          data-test-id="amount-input"
           {...register('amount', { valueAsNumber: true })}
         />
         {errors.amount && <span className={styles.error}>{errors.amount.message}</span>}
@@ -44,7 +44,7 @@ export const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps)
 
       <div className={styles.formGroup}>
         <label htmlFor='categoryId'>Категория</label>
-        <select id='categoryId' className={styles.select} disabled={isCategoriesLoading} data-testid="category-select" {...register('categoryId')}>
+        <select id='categoryId' className={styles.select} disabled={isCategoriesLoading} data-test-id="category-select" {...register('categoryId')}>
           <option value="" disabled>Выберите категорию</option>
           {filteredCategories?.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -57,13 +57,13 @@ export const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps)
 
       <div className={styles.formGroup}>
         <label htmlFor="description">Описание</label>
-        <input id="description" className={styles.input} type="text" placeholder="Например: Пятерочка" data-testid="description-input" {...register('description')} />
+        <input id="description" className={styles.input} type="text" placeholder="Например: Пятерочка" data-test-id="description-input" {...register('description')} />
         {errors.description && <span className={styles.error}>{errors.description.message}</span>}
       </div>
 
       <div className={styles.formGroup}>
         <label htmlFor="date">Дата</label>
-        <input id="date" className={styles.input} type="date" data-testid="date-input" {...register('date')} />
+        <input id="date" className={styles.input} type="date" data-test-id="date-input" {...register('date')} />
         {errors.date && <span className={styles.error}>{errors.date.message}</span>}
       </div>
 
@@ -73,7 +73,7 @@ export const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps)
         </div>
       )}
 
-      <button className={styles.submitBtn} type="submit" disabled={isPending} data-testid="transaction-submit-btn">
+      <button className={styles.submitBtn} type="submit" disabled={isPending} data-test-id="transaction-submit-btn">
         {isPending ? 'Сохранение...' : 'Сохранить'}
       </button>
     </form>

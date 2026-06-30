@@ -29,12 +29,12 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
         Показать удалённые категории
       </label>
       {
-        !categories.length ? (
+        !categories?.length ? (
           <div className={styles.emptyState}>
             {showDeleted ? 'Удалённых категорий нет' : 'У вас пока нет категорий'}
           </div>
         ) : (
-          categories.map(cat => (
+          categories?.map(cat => (
             <div key={cat.id} className={styles.card}>
               <div className={styles.left}>
                 <div className={styles.icon} style={{ backgroundColor: `${cat.color}20` }}>
