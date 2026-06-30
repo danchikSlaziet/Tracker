@@ -1,0 +1,144 @@
+.container {
+  background: var(--card-bg, #ffffff);
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.container h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+}
+
+.container p {
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+:global([data-theme='dark']) .container p {
+  color: var(--text-secondary, #9ca3af);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.5em; /* Раздвигаем цифры, чтобы выглядело как промокод */
+  border: 2px solid var(--border-color, #d1d5db);
+  border-radius: 0.5rem;
+  background-color: var(--input-bg, #ffffff);
+  color: var(--text-primary, #111827);
+  outline: none;
+  font-weight: 600;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.submitBtn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.resendBlock {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.resendBtn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s ease, color 0.2s ease;
+}
+
+.resendBtn:hover:not(:disabled) {
+  text-decoration-color: currentColor;
+}
+
+.resendBtn:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.success {
+  color: #10b981;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.logoutBlock {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.logoutBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.logoutBtn:hover {
+  color: var(--text-primary, #111827);
+}

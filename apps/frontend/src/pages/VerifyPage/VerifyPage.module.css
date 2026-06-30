@@ -1,0 +1,11 @@
+.pageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  /* Светлая тема */
+  background-color: var(--bg-color, #f3f4f6);
+  color: var(--text-color, #1f2937);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

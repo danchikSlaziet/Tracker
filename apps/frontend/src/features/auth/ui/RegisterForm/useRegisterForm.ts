@@ -16,7 +16,7 @@ export const useRegisterForm = () => {
 
   const onSubmit = (data: LoginFormValues) => {
     register(data, {
-      onSuccess: () => navigate(ROUTES.LOGIN),
+      onSuccess: () => navigate(ROUTES.HOME),
       onError: (error: any) => form.setError('root', {
         message: error.response?.data?.error ?? 'Ошибка регистрации'
       })
