@@ -27,7 +27,7 @@ app.use(express.json()) // Чтобы Express умел читать JSON из re
 app.use(cookieParser()) // Чтобы Express умел читать куки из req.cookies
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
     credentials: true, // передача httpOnly куки
   })
 )
