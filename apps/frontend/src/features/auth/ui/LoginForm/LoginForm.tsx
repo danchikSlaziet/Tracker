@@ -16,7 +16,7 @@ export function LoginForm() {
                 label="Email"
                 placeholder="name@example.com"
                 error={errors.email?.message}
-                data-testid="email-input"
+                data-test-id="email-input"
                 {...register('email')} /* отдаст onChange, onBlur, ref и name */
             />
             <Input
@@ -25,7 +25,7 @@ export function LoginForm() {
                 label="Пароль"
                 placeholder="••••••"
                 error={errors.password?.message}
-                data-testid="password-input"
+                data-test-id="password-input"
                 {...register('password')}
             />
 
@@ -33,7 +33,7 @@ export function LoginForm() {
                 <p className={styles.rootError}>{errors.root.message}</p>
             )}
 
-            <Button type="submit" isLoading={isPending} className={styles.submitBtn} data-testid="login-submit-btn">
+            <Button type="submit" isLoading={isPending} className={styles.submitBtn} data-test-id="login-submit-btn">
                 Войти
             </Button>
             <div className={styles.footerText}>

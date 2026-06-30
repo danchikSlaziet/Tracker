@@ -22,16 +22,16 @@ export const TransactionFiltersPanel = ({ filters, onChange }: TransactionFilter
 
   return (
     <div className={styles.filters}>
-      <Input data-testId='search-input' placeholder='Поиск по описанию' onChange={(e) => handleChange('search', e.target.value)}/>
+      <Input data-test-id='search-input' placeholder='Поиск по описанию' onChange={(e) => handleChange('search', e.target.value)}/>
       <select
-        data-testId='select-type-filter'
+        data-test-id='select-type-filter'
         className={styles.select}
         value={filters.type ?? ''}
         onChange={(e) => handleChange('type', e.target.value)}
       >
-        <option data-testId='select-option-all-types' value="">Все типы</option>
-        <option data-testId='select-option-income-type' value="income">Доходы</option>
-        <option data-testId='select-option-expense-type' value="expense">Расходы</option>
+        <option data-test-id='select-option-all-types' value="">Все типы</option>
+        <option data-test-id='select-option-income-type' value="income">Доходы</option>
+        <option data-test-id='select-option-expense-type' value="expense">Расходы</option>
       </select>
 
       <select

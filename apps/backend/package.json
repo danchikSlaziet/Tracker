@@ -5,6 +5,7 @@
         "dev": "tsx watch src/index.ts"
     },
     "dependencies": {
+        "@finance/shared-types": "*",
         "@prisma/adapter-pg": "^7.8.0",
         "@prisma/client": "^7.8.0",
         "bcrypt": "^6.0.0",
@@ -16,8 +17,8 @@
         "helmet": "^8.2.0",
         "jsonwebtoken": "^9.0.3",
         "pg": "^8.21.0",
-        "zod": "^4.4.3",
-        "@finance/shared-types": "*"
+        "resend": "^6.16.0",
+        "zod": "^4.4.3"
     },
     "devDependencies": {
         "@types/bcrypt": "^6.0.0",

@@ -50,7 +50,7 @@ export function ExpensesPieChart({ transactions }: { transactions: Transaction[]
               outerRadius={80}
               paddingAngle={2} // Зазор между дольками
             />
-            <Tooltip formatter={(value: number, name: string) => [`${value} ₽`, `${name}`]} />
+            <Tooltip formatter={(value: any, name: any) => [`${value} ₽`, `${name}`]} />
             <Legend />
           </PieChart>
         </ResponsiveContainer>

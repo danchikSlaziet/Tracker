@@ -5,6 +5,7 @@ import { PageLoader } from '@/shared/ui'
 import { ROUTES } from '@/shared/config/routes'
 import { ProtectedRoute } from './ProtectedRoute'
 import { useThemeStore } from '@/shared/lib/useThemeStore'
+import { VerifyPage } from '@/pages/VerifyPage/VerifyPage'
 
 
 // лень))
@@ -41,6 +42,7 @@ export function AppRouter() {
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
         <Route element={<ProtectedRoute />}>
+          <Route path={ROUTES.VERIFY} element={<VerifyPage />} />
           <Route element={
             <Layout />
           }>

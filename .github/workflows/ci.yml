@@ -1,0 +1,125 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  lint-and-build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint --workspace=@finance/frontend
+
+      - name: Build Frontend
+        run: npm run build --workspace=@finance/frontend
+
+  test-unit:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Frontend Tests
+        # Добавляем флаг --run, чтобы Vitest запустился один раз и завершился (без watch-мода)
+        run: npm run test --workspace=@finance/frontend -- --run
+
+  test-e2e:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    
+    # Поднимаем настоящую базу PostgreSQL в фоне специально для тестов
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: finance_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    # Передаем адрес поднятой базы в переменные окружения для Prisma
+    env:
+      DATABASE_URL: "postgresql://postgres:password@localhost:5432/finance_test?schema=public"
+      JWT_SECRET: "test-secret-key-for-ci"
+      PORT: 3000
+      VITE_API_URL: "http://localhost:3000/api"
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Push Database Schema (Prisma)
+        run: |
+          npx prisma db push
+          npx prisma generate
+        working-directory: ./apps/backend
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        working-directory: ./apps/frontend
+
+      - name: Run Backend (Background)
+        run: npm run dev --workspace=@finance/backend &
+        
+      - name: Wait for backend to be ready
+        # Флаг --yes нужен, чтобы npx в облаке не спрашивал "Proceed? (y/n)"
+        run: npx --yes wait-on tcp:3000
+
+      - name: Run Frontend (Background)
+        run: npm run dev --workspace=@finance/frontend &
+
+      - name: Wait for frontend to be ready
+        run: npx --yes wait-on tcp:5173
+
+      - name: Run E2E Tests
+        run: npm run test:e2e
+        working-directory: ./apps/frontend
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/frontend/playwright-report/
+          retention-days: 7
