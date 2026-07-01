@@ -14,10 +14,12 @@ vi.mock('@/features/transactions/api/transactionsApi', () => ({
   getTransactions: vi.fn(),
   createTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
+  importTransactions: vi.fn(),
 }))
 
 vi.mock('@/entities/category/api/categoriesApi', () => ({
   getCategories: vi.fn(),
+  createCategory: vi.fn()
 }))
 
 describe('Интеграционный тест: TransactionWidget', () => {

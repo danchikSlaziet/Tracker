@@ -1,6 +1,6 @@
 import { useCategories } from '@/entities/category/api/useCategories'
 import { beforeEach, describe, vi } from 'vitest'
-import { useCreateTransaction } from '../api/useTransactions'
+import { useCreateTransaction } from '../../api/useTransactions'
 import { it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -13,7 +13,7 @@ import { CreateTransactionForm } from './CreateTransactionForm'
 vi.mock('@/entities/category/api/useCategories', () => ({
   useCategories: vi.fn()
 }))
-vi.mock('../api/useTransactions', () => ({
+vi.mock('../../api/useTransactions', () => ({
   useCreateTransaction: vi.fn()
 }))
 

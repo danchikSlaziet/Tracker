@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useDeleteTransaction, useTransactions } from "../../api/useTransactions";
+import { useDeleteTransaction, useTransactions, useUpdateTransactions } from "../../api/useTransactions";
 import userEvent from "@testing-library/user-event";
 import { screen } from "@testing-library/dom";
 import { renderWithProviders } from "@/shared/lib/test-utils";
@@ -8,7 +8,8 @@ import { ROUTES } from "@/shared/config/routes";
 
 vi.mock('../../api/useTransactions', () => ({
   useDeleteTransaction: vi.fn(),
-  useTransactions: vi.fn()
+  useTransactions: vi.fn(),
+  useUpdateTransactions: vi.fn(),
 }));
 
 describe('Компонент TransactionList.test', () => {
@@ -17,10 +18,16 @@ describe('Компонент TransactionList.test', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
+    vi.mocked(useUpdateTransactions).mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    } as any)
+
     vi.mocked(useDeleteTransaction).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
     } as any)
+
     vi.mocked(useTransactions).mockReturnValue({
       data: [
         {
