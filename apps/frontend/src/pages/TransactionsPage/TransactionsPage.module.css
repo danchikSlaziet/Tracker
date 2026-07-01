@@ -20,27 +20,3 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
-
-.content {
-  display: flex;
-  gap: 40px;
-  align-items: flex-start;
-}
-
-.formWrapper {
-  flex: 0 0 350px; 
-}
-
-.listWrapper {
-  flex: 1;
-}
-
-@media (max-width: 768px) {
-  .content {
-    flex-direction: column;
-  }
-  .formWrapper {
-    flex: 1;
-    width: 100%;
-  }
-}

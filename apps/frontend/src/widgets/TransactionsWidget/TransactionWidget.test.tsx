@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/shared/lib/test-utils'
-import { TransactionsPage } from './TransactionsPage'
 import { ROUTES } from '@/shared/config/routes'
 
 
 import { getTransactions, createTransaction, deleteTransaction } from '@/features/transactions/api/transactionsApi'
 import { getCategories } from '@/entities/category/api/categoriesApi'
+import { TransactionWidget } from './TransactionsWidget'
 
 
 vi.mock('@/features/transactions/api/transactionsApi', () => ({
@@ -20,7 +20,7 @@ vi.mock('@/entities/category/api/categoriesApi', () => ({
   getCategories: vi.fn(),
 }))
 
-describe('Интеграционный тест: TransactionsPage', () => {
+describe('Интеграционный тест: TransactionWidget', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -48,7 +48,7 @@ describe('Интеграционный тест: TransactionsPage', () => {
 
     vi.mocked(createTransaction).mockResolvedValue(newTransaction as any)
 
-    renderWithProviders(<TransactionsPage />, { route: ROUTES.TRANSACTIONS })
+    renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS })
 
     const amountInput = await screen.findByLabelText('Сумма')
     const categorySelect = screen.getByLabelText('Категория')
@@ -88,7 +88,7 @@ describe('Интеграционный тест: TransactionsPage', () => {
 
     vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" })
 
-    renderWithProviders(<TransactionsPage />, { route: ROUTES.TRANSACTIONS }) // рендер только после мока апишки
+    renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS }) // рендер только после мока апишки
 
     const deleteBtn = await screen.findByText('Удалить') // getByText не подтянет - т.к. асинхронщина, а транзакции еще не подгрузились
 
