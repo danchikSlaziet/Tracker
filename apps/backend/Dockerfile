@@ -20,4 +20,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 
 # При запуске контейнера заходим в директорию бэкенда (чтобы Prisma видела свой config), накатываем миграции БД и запускаем
-CMD ["sh", "-c", "cd apps/backend && npx prisma migrate deploy && npx tsx src/index.ts"]
+CMD ["sh", "-c", "cd apps/backend && npx prisma db push --accept-data-loss && npx tsx src/index.ts"]
