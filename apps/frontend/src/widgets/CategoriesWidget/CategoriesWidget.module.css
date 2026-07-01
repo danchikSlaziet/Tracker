@@ -1,0 +1,21 @@
+.content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .content {
+    grid-template-columns: 350px 1fr;
+  }
+}
+
+.formWrapper {
+  position: sticky;
+  top: 2rem;
+}
+
+.listWrapper {
+  min-width: 0;
+}
