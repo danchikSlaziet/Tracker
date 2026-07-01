@@ -19,6 +19,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
 const app = express()
+app.set('trust proxy', 1)
 export const prisma = new PrismaClient({ adapter }) // для общения с базой
 
 // --- Мидлвары ---
