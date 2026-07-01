@@ -12,3 +12,16 @@ export const createTransaction = (data: CreateTransactionDto) =>
 
 export const deleteTransaction = (id: string) =>
   httpClient.delete(`/transactions/${id}`).then(res => res.data)
+
+export const importTransactions = (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return httpClient.post<{ message: string; importedCount: number }>('/transactions/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }).then(res => res.data)
+}
+
+export const updateTransaction = (id: string, data: Partial<CreateTransactionDto>) =>
+  httpClient.patch<Transaction>(`/transactions/${id}`, data).then(res => res.data)

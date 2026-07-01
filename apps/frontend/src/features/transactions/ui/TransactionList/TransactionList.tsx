@@ -2,6 +2,7 @@ import { useTransactions, useDeleteTransaction } from '../../api/useTransactions
 import { formatMoney } from '@/shared/lib/formatMoney'
 import styles from './TransactionList.module.css'
 import type { TransactionFilters } from '../../model/transactionsSchema'
+import { TransactionCategoryEditor } from '../TransactionCategoryEditor/TransactionCategoryEditor'
 
 interface TransactionListProps {
   filters?: TransactionFilters
@@ -30,7 +31,11 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
             </div>
 
             <div className={styles.details}>
-              <span className={styles.categoryName}>{tx.category.name}</span>
+              <TransactionCategoryEditor
+                transactionId={tx.id}
+                currentCategory={tx.category}
+                transactionType={tx.type}
+              />
               <span className={styles.description}>{tx.description}</span>
               <span className={styles.date}>
                 {new Date(tx.date).toLocaleDateString('ru-RU')}

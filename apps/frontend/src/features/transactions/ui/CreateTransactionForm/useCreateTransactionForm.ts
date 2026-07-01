@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useCreateTransaction } from '../api/useTransactions'
+import { useCreateTransaction } from '../../api/useTransactions'
 import { useCategories } from '@/entities/category/api/useCategories'
-import { formSchema, type CreateTransactionFormValues } from '../model/transactionsSchema'
+import { formSchema, type CreateTransactionFormValues } from '../../model/transactionsSchema'
 
 export const useCreateTransactionForm = (onSuccessCallback?: () => void) => {
   const { mutate: createTransaction, isPending, error: serverError } = useCreateTransaction()
