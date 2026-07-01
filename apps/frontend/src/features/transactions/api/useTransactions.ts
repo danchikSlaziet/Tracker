@@ -3,9 +3,12 @@ import {
   getTransactions,
   createTransaction,
   deleteTransaction,
+  importTransactions,
+  updateTransaction,
 } from './transactionsApi'
 import type { TransactionFilters } from '../model/transactionsSchema'
 import { QUERY_KEYS } from '@/shared/config/queryKeys'
+import type { CreateTransactionDto } from '@finance/shared-types'
 
 export const useTransactions = (filters?: TransactionFilters) => {
 
@@ -39,5 +42,29 @@ export const useDeleteTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
     },
+  })
+}
+
+export const useImportTransactions = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: importTransactions,
+    onSuccess: () => {
+      // Инвалидируем транзакции и категории (на случай создания категории "Неразобранное")
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES })
+    }
+  })
+}
+
+export const useUpdateTransactions = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string, data: Partial<CreateTransactionDto> }) => updateTransaction(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
+    }
   })
 }
