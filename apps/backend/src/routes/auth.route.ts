@@ -22,7 +22,7 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 const sendVerificationEmail = async (email: string, otpCode: string) => {
   try {
     await resend.emails.send({
-      from: 'Finance App <onboarding@resend.dev>',
+      from: 'Finance App <noreply@finance67.ru>',
       to: email,
       subject: 'Код подтверждения регистрации',
       html: `<p>Твой код для подтверждения email:</p><h2>${otpCode}</h2><p>Код действителен 15 минут.</p>`
