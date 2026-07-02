@@ -67,13 +67,14 @@ userRouter.post('/avatar', (req, res) => {
       }
 
       if (user.avatarUrl) {
-        const oldFileName = user.avatarUrl.replace('/uploads/', '')
+        const oldFileName = user.avatarUrl.replace('/api/uploads/', '').replace('/uploads/', '')
         const oldFilePath = path.join(process.cwd(), 'uploads', oldFileName)
         // .catch(() => {}) нужен, чтобы сервер не упал, если файл уже был удален вручную
         await fs.unlink(oldFilePath).catch(() => { })
       }
 
-      const avatarUrl = `/uploads/${req.file.filename}`
+      const avatarUrl = `/api/uploads/${req.file.filename}`
+
       const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: { avatarUrl },
@@ -111,7 +112,7 @@ userRouter.delete('/avatar', async (req, res): Promise<any> => {
     }
 
     if (user.avatarUrl) {
-      const fileName = user.avatarUrl.replace('/uploads/', '')
+      const fileName = user.avatarUrl.replace('/api/uploads/', '').replace('/uploads/', '')
       const filePath = path.join(process.cwd(), 'uploads', fileName)
       await fs.unlink(filePath).catch(() => { })
     }

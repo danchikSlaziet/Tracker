@@ -46,7 +46,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true })
 }
 // Раздаем статику с поддержкой CORS, чтобы фронт мог скачать картинку
-app.use('/uploads', cors(), express.static(uploadsDir))
+app.use('/api/uploads', cors(), express.static(uploadsDir))
 
 
 // --- РОУТЫ ---
