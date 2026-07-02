@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -10,11 +10,15 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: ${DB_NAME:-finance_tracker}
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-login} -d ${DB_NAME:-finance_tracker}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-login} -d ${DB_NAME:-finance_tracker}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,7 +30,7 @@ services:
     container_name: finance_backend
     restart: always
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
       DATABASE_URL: postgresql://${DB_USER:-login}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-finance_tracker}?schema=public
       JWT_SECRET: ${JWT_SECRET}
@@ -38,6 +42,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - backend_uploads:/app/apps/backend/uploads
 
   frontend:
     build:
@@ -48,9 +54,10 @@ services:
     container_name: finance_frontend
     restart: always
     ports:
-      - '8080:80'
+      - "8080:80"
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+  backend_uploads:
