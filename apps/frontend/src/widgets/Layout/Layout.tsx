@@ -1,12 +1,14 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.css'
 import { useLogout } from '@/features/auth/api/useLogout'
 import { ROUTES } from '@/shared/config/routes'
 import { ThemeToggle } from '@/shared/ui/ThemeToggle/ThemeToggle'
+import { Suspense } from 'react'
+import { PageLoader } from '@/shared/ui'
 
 export function Layout() {
   const { mutate: logout, isPending } = useLogout()
-
+  const location = useLocation()
   return (
     <div className={styles.root}>
       <aside className={styles.sidebar}>
@@ -48,7 +50,9 @@ export function Layout() {
       </aside>
 
       <main className={styles.main}>
-        <Outlet /> {/* перерисовка только этой части, а не всего Layout в отл. от children */}
+        <Suspense key={location.pathname} fallback={<PageLoader />}> {/* иначе PageLoader отрисуется только один раз и только для одной страницы */}
+          <Outlet />{/* перерисовка только этой части, а не всего Layout в отл. от children */}
+        </Suspense>
       </main>
     </div>
   )
