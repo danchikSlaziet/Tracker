@@ -175,7 +175,6 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       .map(c => `- ID: ${c.id}, Название: "${c.name}", Тип: "${c.type}"`)
       .join('\n')
 
-    // 2. Инициализируем Gemini 2.0 Flash
     const model = genAI.getGenerativeModel({
       model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
       generationConfig: {
@@ -273,6 +272,17 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
     console.error('Import error:', error)
 
     const errorMessage = error.message || ''
+
+    if (
+      errorMessage.includes('User location is not supported') ||
+      errorMessage.includes('location is not supported') || 
+      errorMessage.includes('fetch failed')
+    ) {
+      res.status(403).json({
+        error: 'Не удалось подключиться к Google Gemini API. Убедитесь, что у вас включен VPN (сервис недоступен в вашем регионе).'
+      })
+      return
+    }
 
     // Проверяем, исчерпан ли лимит запросов (код 429 или статус RESOURCE_EXHAUSTED)
     if (
