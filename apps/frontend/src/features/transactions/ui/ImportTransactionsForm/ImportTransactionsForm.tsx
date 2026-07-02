@@ -63,6 +63,7 @@ export const ImportTransactionsForm = () => {
   return (
     <div className={styles.container}>
       <h3>Импорт выписки банка (PDF)</h3>
+      <h3>Для работы включите VPN!</h3>
       <p className={styles.subtitle}>
         Загрузите выписку любого банка — наш ИИ распознает транзакции и разложит по вашим категориям.
       </p>

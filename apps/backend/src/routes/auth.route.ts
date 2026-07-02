@@ -84,7 +84,7 @@ authRouter.post('/register', async (req, res): Promise<any> => {
     sendVerificationEmail(user.email, otpCode)
   }
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl }
   const response: AuthResponse = { user: responseUser }
 
   const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '7d' })
@@ -128,7 +128,7 @@ authRouter.post('/login', async (req, res): Promise<any> => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   })
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl }
   const response: AuthResponse = { user: responseUser }
 
   return res.json(response)
@@ -155,14 +155,14 @@ authRouter.get('/me', authMiddleware, async (req, res): Promise<any> => {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, isVerified: true },
+    select: { id: true, email: true, isVerified: true, avatarUrl: true },
   })
 
   if (!user) {
     return res.status(401).json({ error: 'Пользователь не найден' })
   }
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl }
   const response: AuthResponse = { user: responseUser }
 
   return res.json(response)
@@ -209,7 +209,7 @@ authRouter.post('/verify-otp', async (req, res): Promise<any> => {
     }
   })
 
-  const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified }
+  const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified, avatarUrl: updatedUser.avatarUrl }
   return res.json({ user: responseUser })
 })
 

@@ -12,6 +12,9 @@ import rateLimit from 'express-rate-limit'
 import { authMiddleware } from './middleware/auth.middleware'
 import { transactionsRouter } from './routes/transaction.route'
 import { categoriesRouter } from './routes/categories.route'
+import path from 'path'
+import fs from 'fs'
+import { userRouter } from './routes/user.route'
 
 // ебучее подключение к бд в 7-ой Призме
 
@@ -23,7 +26,11 @@ app.set('trust proxy', 1)
 export const prisma = new PrismaClient({ adapter }) // для общения с базой
 
 // --- Мидлвары ---
-app.use(helmet())
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }, // разрешает загрузку картинок на фронтенде с бэкенда
+  })
+)
 app.use(express.json()) // Чтобы Express умел читать JSON из req.body
 app.use(cookieParser()) // Чтобы Express умел читать куки из req.cookies
 app.use(
@@ -32,6 +39,15 @@ app.use(
     credentials: true, // передача httpOnly куки
   })
 )
+
+// Создаем папку для аватаров, если её ещё нет
+const uploadsDir = path.join(process.cwd(), 'uploads')
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true })
+}
+// Раздаем статику с поддержкой CORS, чтобы фронт мог скачать картинку
+app.use('/uploads', cors(), express.static(uploadsDir))
+
 
 // --- РОУТЫ ---
 
@@ -49,7 +65,7 @@ const authLimiter = rateLimit({
 app.use('/api/auth', authLimiter, authRouter)
 app.use('/api/transactions', authMiddleware, transactionsRouter)
 app.use('/api/categories', authMiddleware, categoriesRouter)
-
+app.use('/api/user', authMiddleware, userRouter)
 
 const PORT = config.port
 app.listen(PORT, () => {
