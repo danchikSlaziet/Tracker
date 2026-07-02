@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useState } from 'react'
 import styles from './Avatar.module.css'
 
 interface AvatarProps {
@@ -14,11 +14,15 @@ const getInitials = (email: string) => {
 }
 
 export function Avatar({ src, email, size = 'md', className }: AvatarProps) {
-  const [hasError, setHasError] = React.useState(false)
+  const [hasError, setHasError] = useState(false)
 
-  useEffect(() => {
+  const [prevSrc, setPrevSrc] = useState<string | null | undefined>(src)
+
+  if (src !== prevSrc) {
+    setPrevSrc(src)
     setHasError(false)
-  }, [src])
+  } // при useEffect(..., [src]) лишний рендер, линтер не пропустит
+
 
   const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '')
   const fullSrc = src ? `${baseUrl}${src}` : null
