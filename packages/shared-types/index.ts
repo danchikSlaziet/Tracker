@@ -25,6 +25,7 @@ export interface UserDto {
   id: string
   email: string
   isVerified: boolean
+  avatarUrl: string | null
 }
 export interface AuthResponse {
   user: UserDto
