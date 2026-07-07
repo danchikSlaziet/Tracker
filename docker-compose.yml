@@ -39,6 +39,7 @@ services:
       PORT: 3000
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     depends_on:
       db:
         condition: service_healthy
@@ -51,6 +52,7 @@ services:
       dockerfile: apps/frontend/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        VITE_TELEGRAM_BOT_USERNAME: ${VITE_TELEGRAM_BOT_USERNAME}
     container_name: finance_frontend
     restart: always
     ports:
