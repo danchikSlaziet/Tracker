@@ -19,7 +19,7 @@ export function TelegramLoginButton({ onAuth }: TelegramLoginButtonProps) {
     script.setAttribute('data-telegram-login', import.meta.env.VITE_TELEGRAM_BOT_USERNAME)
     script.setAttribute('data-size', 'large')
     script.setAttribute('data-request-access', 'write')
-    script.setAttribute('data-onauth', 'TelegramLoginWidgetCallback')
+    script.setAttribute('data-onauth', 'TelegramLoginWidgetCallback(user)')
 
     ref.current?.appendChild(script)
 
