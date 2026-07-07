@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser'
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
-import { config } from './config'
 import { authRouter } from './routes/auth.route'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
@@ -33,6 +32,8 @@ app.use(
 )
 app.use(express.json()) // Чтобы Express умел читать JSON из req.body
 app.use(cookieParser()) // Чтобы Express умел читать куки из req.cookies
+
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
@@ -67,7 +68,7 @@ app.use('/api/transactions', authMiddleware, transactionsRouter)
 app.use('/api/categories', authMiddleware, categoriesRouter)
 app.use('/api/user', authMiddleware, userRouter)
 
-const PORT = config.port
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Backend server is running on http://localhost:${PORT}`)
 })
