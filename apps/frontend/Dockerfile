@@ -6,6 +6,10 @@ WORKDIR /app
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
+# Передаем юзернейм Telegram бота
+ARG VITE_TELEGRAM_BOT_USERNAME
+ENV VITE_TELEGRAM_BOT_USERNAME=$VITE_TELEGRAM_BOT_USERNAME
+
 # Копируем конфигурацию монорепозитория
 COPY package*.json ./
 COPY apps/frontend/package*.json ./apps/frontend/
