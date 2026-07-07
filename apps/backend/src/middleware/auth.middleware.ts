@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import { config } from '../config'
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.cookies.token
@@ -11,7 +10,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
   }
 
   try {
-    const payload = jwt.verify(token, config.jwtSecret) as { userId: string }
+    const payload = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string }
     
     // Кладём userId в объект запроса, чтобы следующие обработчики могли его использовать
     req.userId = payload.userId

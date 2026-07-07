@@ -4,9 +4,10 @@ import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import { Resend } from 'resend'
 import { prisma } from '../index'
-import { config } from '../config'
 import { authMiddleware } from '../middleware/auth.middleware'
 import type { AuthResponse, UserDto } from '@finance/shared-types'
+import { verifyTelegramHash } from '../lib/verifyTelegramHash'
+import type { TelegramAuthData } from '@finance/shared-types'
 
 export const authRouter = Router()
 
@@ -15,6 +16,16 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const authBodySchema = z.object({
   email: z.string().email('Некорректный email'),
   password: z.string().min(6, 'Пароль должен быть не короче 6 символов'),
+})
+
+const telegramAuthSchema = z.object({
+  id: z.number(),
+  first_name: z.string(),
+  last_name: z.string().optional(),
+  username: z.string().optional(),
+  photo_url: z.string().optional(),
+  auth_date: z.number(),
+  hash: z.string(),
 })
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
@@ -84,10 +95,10 @@ authRouter.post('/register', async (req, res): Promise<any> => {
     sendVerificationEmail(user.email, otpCode)
   }
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId }
   const response: AuthResponse = { user: responseUser }
 
-  const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '7d' })
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || '', { expiresIn: '7d' })
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -114,12 +125,17 @@ authRouter.post('/login', async (req, res): Promise<any> => {
     return res.status(401).json({ error: 'Неверный email или пароль' })
   }
 
+  // зареган через Telegram
+  if (!user.passwordHash) {
+    return res.status(400).json({ error: 'Для этого аккаунта настроен вход через Telegram' })
+  }
+
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
   if (!isPasswordValid) {
     return res.status(401).json({ error: 'Неверный email или пароль' })
   }
 
-  const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '7d' })
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || '', { expiresIn: '7d' })
 
   res.cookie('token', token, {
     httpOnly: true,
@@ -128,7 +144,7 @@ authRouter.post('/login', async (req, res): Promise<any> => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   })
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId }
   const response: AuthResponse = { user: responseUser }
 
   return res.json(response)
@@ -155,14 +171,14 @@ authRouter.get('/me', authMiddleware, async (req, res): Promise<any> => {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, isVerified: true, avatarUrl: true },
+    select: { id: true, email: true, isVerified: true, avatarUrl: true, telegramId: true },
   })
 
   if (!user) {
     return res.status(401).json({ error: 'Пользователь не найден' })
   }
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId }
   const response: AuthResponse = { user: responseUser }
 
   return res.json(response)
@@ -209,7 +225,7 @@ authRouter.post('/verify-otp', async (req, res): Promise<any> => {
     }
   })
 
-  const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified, avatarUrl: updatedUser.avatarUrl }
+  const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified, avatarUrl: updatedUser.avatarUrl, telegramId: updatedUser.telegramId }
   return res.json({ user: responseUser })
 })
 
@@ -241,4 +257,69 @@ authRouter.post('/resend-otp', async (req, res): Promise<any> => {
   sendVerificationEmail(user.email, otpCode)
 
   return res.json({ message: 'Новый код отправлен на почту' })
+})
+
+authRouter.post('/telegram', async (req, res): Promise<any> => {
+
+  const parsed = telegramAuthSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Некорректные данные от Telegram' })
+  }
+
+  const telegramData = parsed.data as TelegramAuthData
+
+  if (!verifyTelegramHash(telegramData, process.env.TELEGRAM_BOT_TOKEN || '')) {
+    return res.status(401).json({ error: 'Невалидная подпись данных Telegram' })
+  }
+
+  const telegramId = String(telegramData.id)
+
+  try {
+    let user = await prisma.user.findUnique({
+      where: { telegramId },
+    })
+
+    if (!user) {
+      // генерим уникальное техническое мыло
+      const email = `tg_${telegramId}@telegram.user`
+
+      user = await prisma.user.create({
+        data: {
+          email,
+          telegramId,
+          isVerified: true,
+          avatarUrl: telegramData.photo_url ?? null,
+          categories: {
+            create: [
+              { name: 'Продукты', icon: '🛒', color: '#3b82f6', type: 'expense' },
+              { name: 'Транспорт', icon: '🚌', color: '#f59e0b', type: 'expense' },
+              { name: 'Зарплата', icon: '💰', color: '#10b981', type: 'income' },
+              { name: 'Развлечения', icon: '🍿', color: '#8b5cf6', type: 'expense' },
+            ],
+          },
+        },
+      })
+    }
+
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || '', { expiresIn: '7d' })
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+
+    const responseUser: UserDto = {
+      id: user.id,
+      email: user.email,
+      isVerified: user.isVerified,
+      avatarUrl: user.avatarUrl,
+      telegramId: user.telegramId,
+    }
+
+    return res.json({ user: responseUser })
+  } catch (error) {
+    console.error('Ошибка авторизации через Telegram:', error)
+    return res.status(500).json({ error: 'Внутренняя ошибка сервера при авторизации' })
+  }
 })

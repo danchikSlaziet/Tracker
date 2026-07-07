@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { prisma } from '../index'
-import { boolean, z } from 'zod'
+import { z } from 'zod'
 
 export const categoriesRouter = Router()
 

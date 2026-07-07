@@ -3,9 +3,10 @@ import styles from './RegisterForm.module.css'
 import { useRegisterForm } from './useRegisterForm'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/shared/config/routes'
+import { TelegramLoginButton } from '../TelegramLogin/TelegramLoginButton'
 
 export function RegisterForm() {
-  const { form, onSubmit, isPending } = useRegisterForm()
+  const { form, onSubmit, isPending, onTelegramSuccess } = useRegisterForm()
   const { register, formState: { errors } } = form
   return (
     <form className={styles.form} onSubmit={onSubmit}>
@@ -36,6 +37,10 @@ export function RegisterForm() {
       <Button type="submit" isLoading={isPending} className={styles.submitBtn} data-test-id="register-submit-btn">
         Регистрация
       </Button>
+      <div className={styles.divider}>
+        <span>или</span>
+      </div>
+      <TelegramLoginButton onAuth={onTelegramSuccess} />
       <div className={styles.footerText}>
         Уже есть аккаунт? <Link to={ROUTES.LOGIN} className={styles.link}>Войти</Link>
       </div>
