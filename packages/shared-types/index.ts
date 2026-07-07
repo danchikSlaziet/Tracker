@@ -26,6 +26,7 @@ export interface UserDto {
   email: string
   isVerified: boolean
   avatarUrl: string | null
+  telegramId: string | null
 }
 export interface AuthResponse {
   user: UserDto
@@ -33,4 +34,14 @@ export interface AuthResponse {
 export interface LoginDto {
   email: string
   password: string
+}
+
+export interface TelegramAuthData {
+  id: number
+  first_name: string
+  last_name?: string
+  username?: string
+  photo_url?: string
+  auth_date: number
+  hash: string
 }

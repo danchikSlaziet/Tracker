@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { registerApi } from "./authApi"
+import { telegramAuthApi } from "./authApi"
 import { QUERY_KEYS } from "@/shared/config/queryKeys"
 
-
-export const useRegister = () => {
+export const useTelegramAuth = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: registerApi,
+    mutationFn: telegramAuthApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ME })
     }
