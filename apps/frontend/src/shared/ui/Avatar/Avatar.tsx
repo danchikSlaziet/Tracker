@@ -25,7 +25,8 @@ export function Avatar({ src, email, size = 'md', className }: AvatarProps) {
 
 
   const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '')
-  const fullSrc = src ? `${baseUrl}${src}` : null
+  const isAbsoluteUrl = src?.startsWith('http://') || src?.startsWith('https://')
+  const fullSrc = src ? (isAbsoluteUrl ? src : `${baseUrl}${src}`) : null
   const sizeClass = styles[size] || styles.md
 
   if (fullSrc && !hasError) {
