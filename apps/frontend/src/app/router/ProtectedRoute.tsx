@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useMe } from '@/features/auth/api/useMe'
-import { PageLoader } from '@/shared/ui'
+import { PageLoader } from '@finance/ui-kit'
 import { ROUTES } from '@/shared/config/routes'
 
 export function ProtectedRoute() {

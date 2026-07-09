@@ -2,7 +2,7 @@
 import { useCategories } from '@/entities/category/api/useCategories'
 import styles from './TransactionFilters.module.css'
 import type { TransactionFilters } from '../../model/transactionsSchema'
-import { Input } from '@/shared/ui'
+import { Input } from '@finance/ui-kit'
 
 interface TransactionFiltersProps {
   filters: TransactionFilters

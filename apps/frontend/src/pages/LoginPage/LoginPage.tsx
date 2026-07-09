@@ -1,11 +1,11 @@
 import { LoginForm } from '@/features/auth'
 import styles from './LoginPage.module.css'
-import { ThemeToggle } from '@/shared/ui/ThemeToggle/ThemeToggle'
+import { ThemeSwitcher } from '@/features/theme/ui/ThemeSwitcher/ThemeSwitcher'
 
 export function LoginPage() {
   return (
     <div className={styles.page}>
-      <ThemeToggle className={styles.themeBtn} />
+      <ThemeSwitcher className={styles.themeBtn} />
       <LoginForm />
     </div>
   )

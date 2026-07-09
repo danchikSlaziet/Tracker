@@ -2,12 +2,12 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.css'
 import { useLogout } from '@/features/auth/api/useLogout'
 import { ROUTES } from '@/shared/config/routes'
-import { ThemeToggle } from '@/shared/ui/ThemeToggle/ThemeToggle'
 import { Suspense, useState } from 'react'
-import { PageLoader } from '@/shared/ui'
+import { PageLoader } from '@finance/ui-kit'
 import { useMe } from '@/features/auth/api/useMe'
-import { Avatar } from '@/shared/ui/Avatar/Avatar'
+import { Avatar } from '@finance/ui-kit'
 import { ProfileModal } from '@/features/profile/ui/ProfileModal'
+import { ThemeSwitcher } from '@/features/theme/ui/ThemeSwitcher/ThemeSwitcher'
 
 export function Layout() {
   const { mutate: logout, isPending } = useLogout()
@@ -21,7 +21,7 @@ export function Layout() {
   return (
     <div className={styles.root}>
       <aside className={styles.sidebar}>
-        <ThemeToggle />
+        <ThemeSwitcher />
         <div className={styles.logo}>💰 Finance</div>
         <nav className={styles.nav}>
           <NavLink
