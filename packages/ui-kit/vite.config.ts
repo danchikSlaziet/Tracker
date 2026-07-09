@@ -36,7 +36,7 @@ export default defineConfig({
     {
       extends: true,
       test: {
-        name: 'storybook unit',
+        name: 'unit',
         globals: true,
         environment: 'jsdom',
         setupFiles: [path.resolve(dirname, 'src/setupTests.ts')],
