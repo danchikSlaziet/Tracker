@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DOM Snapshots > Avatar > initials 1`] = `"<div class="_avatar_814665 _initials_814665 _md_814665">D</div>"`;
+
+exports[`DOM Snapshots > Button > disabled 1`] = `"<button class="_button_0829c1 _primary_0829c1 _md_0829c1" disabled="">Нажми</button>"`;
+
+exports[`DOM Snapshots > Button > loading 1`] = `"<button class="_button_0829c1 _primary_0829c1 _md_0829c1" disabled="">Загрузка...</button>"`;
+
+exports[`DOM Snapshots > Button > primary 1`] = `"<button class="_button_0829c1 _primary_0829c1 _md_0829c1">Нажми</button>"`;
+
+exports[`DOM Snapshots > Input > default 1`] = `"<div class="_wrapper_0d9f86"><input class="_input_0d9f86" placeholder="Введите текст"></div>"`;
+
+exports[`DOM Snapshots > Input > with error 1`] = `"<div class="_wrapper_0d9f86"><input class="_input_0d9f86 _inputError_0d9f86"><span class="_error_0d9f86">Обязательное поле</span></div>"`;
+
+exports[`DOM Snapshots > Input > with label 1`] = `"<div class="_wrapper_0d9f86"><label for="email" class="_label_0d9f86">Email</label><input id="email" class="_input_0d9f86"></div>"`;
+
+exports[`DOM Snapshots > PageLoader > default 1`] = `"<div role="status" aria-label="Загрузка" class="_wrapper_e6b698"><div class="_spinner_e6b698"></div></div>"`;
+
+exports[`DOM Snapshots > ThemeToggle > dark 1`] = `"<button class="_themeToggle_fa47f0 " aria-label="Переключить тему">☀️</button>"`;
+
+exports[`DOM Snapshots > ThemeToggle > light 1`] = `"<button class="_themeToggle_fa47f0 " aria-label="Переключить тему">🌙</button>"`;
