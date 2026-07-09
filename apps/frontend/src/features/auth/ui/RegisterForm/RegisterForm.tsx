@@ -1,4 +1,4 @@
-import { Button, Input } from '@/shared/ui'
+import { Button, Input } from '@finance/ui-kit'
 import styles from './RegisterForm.module.css'
 import { useRegisterForm } from './useRegisterForm'
 import { Link } from 'react-router-dom'

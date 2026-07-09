@@ -33,3 +33,5 @@ playwright/.cache/
 
 # Uploads
 apps/backend/uploads/
+*storybook.log
+storybook-static

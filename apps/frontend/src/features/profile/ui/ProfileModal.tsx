@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react'
 import type { UserDto } from '@finance/shared-types'
 import styles from './ProfileModal.module.css'
 import { useDeleteAvatar, useUploadAvatar } from '../api/useAvatar'
-import { Avatar } from '@/shared/ui/Avatar/Avatar'
+import { Avatar } from '@finance/ui-kit'
 
 interface ProfileModalProps {
   isOpen: boolean

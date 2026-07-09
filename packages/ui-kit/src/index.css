@@ -1,0 +1,101 @@
+/* Светлая тема */
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --accent-primary: #111827;
+  --accent-hover: #374151;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --input-bg: #ffffff;
+  --danger: #ef4444;
+  --success: #10b981;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] {
+  --bg-primary: #0f0f13;
+  --bg-secondary: #13131f;
+  --text-primary: #f1f1f3;
+  --text-secondary: #9ca3af;
+  --border-color: #1f2937;
+  --accent-primary: #ffffff;
+  --accent-hover: #e5e7eb;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --danger: #ef4444;
+  --success: #10b981;
+}
+
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
