@@ -30,34 +30,43 @@ transactionsRouter.get('/', async (req, res) => {
   const userId = req.userId
   const { type, categoryId, dateFrom, dateTo, search } = req.query
 
+  const where: any = {
+    userId,
+  }
+
+  if (type) {
+    where.type = type as 'income' | 'expense'
+  }
+
+  if (categoryId) {
+    where.categoryId = categoryId as string
+  }
+
+  if (dateFrom || dateTo) {
+    where.date = {
+      ...(dateFrom ? { gte: new Date(dateFrom as string) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo as string) } : {}),
+    }
+  }
+
+  if (search) {
+    where.description = {
+      contains: search as string,
+      mode: 'insensitive' // lowercase == uppercase
+    }
+  }
+
   const transactions = await prisma.transaction.findMany({
-    where: {
-      userId,
-      ...(type ? { type: type as 'income' | 'expense' } : {}),
-      ...(categoryId ? { categoryId: categoryId as string } : {}),
-      ...(dateFrom || dateTo ? {
-        date: {
-          ...(dateFrom ? { gte: new Date(dateFrom as string) } : {}),
-          ...(dateTo ? { lte: new Date(dateTo as string) } : {}),
-        }
-      } : {}),
-      ...(search ? {
-        description: {
-          contains: search as string,
-          mode: 'insensitive' // lowerCase == upperCase
-        }
-      } : {})
-    },
+    where,
     orderBy: [
       { date: 'desc' },
-      { id: 'desc' } // Гарантирует стабильный порядок, если даты одинаковые
+      { id: 'desc' }
     ],
     include: { category: true },
   })
 
   res.json(transactions)
 })
-
 
 
 transactionsRouter.post('/', async (req, res) => {
@@ -275,7 +284,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
 
     if (
       errorMessage.includes('User location is not supported') ||
-      errorMessage.includes('location is not supported') || 
+      errorMessage.includes('location is not supported') ||
       errorMessage.includes('fetch failed')
     ) {
       res.status(403).json({
