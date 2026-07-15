@@ -14,9 +14,12 @@ import { categoriesRouter } from './routes/categories.route'
 import path from 'path'
 import fs from 'fs'
 import { userRouter } from './routes/user.route'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import jwt from 'jsonwebtoken'
+import { parseCookie } from 'cookie'
 
 // ебучее подключение к бд в 7-ой Призме
-
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
@@ -68,7 +71,59 @@ app.use('/api/transactions', authMiddleware, transactionsRouter)
 app.use('/api/categories', authMiddleware, categoriesRouter)
 app.use('/api/user', authMiddleware, userRouter)
 
+const server = createServer(app)
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  }
+})
+
+app.set('io', io)
+
+// мидлвара для проверки авторизации при первом коннекте
+io.use((socket, next) => {
+  const cookieHeader = socket.handshake.headers.cookie
+
+  if (!cookieHeader) {
+    console.log('Socket Auth: Нет кук в заголовках запроса')
+    return next(new Error('Authentication error: No cookies found'))
+  }
+
+  const cookies = parseCookie(cookieHeader)
+  const token = cookies.token
+
+  if (!token) {
+    console.log('Socket Auth: Кука token отсутствует')
+    return next(new Error('Authentication error: Token not found'))
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string }
+    socket.data.userId = payload.userId
+    next()
+  } catch (error) {
+    console.log('Socket Auth: Ошибка верификации JWT токена:', (error as any).message)
+    next(new Error('Authentication error: Invalid token'))
+  }
+})
+
+
+io.on('connection', (socket) => {
+  const userId = socket.data.userId
+  console.log(`Пользователь ${userId} подключился к WebSocket`)
+
+  // Присоединяем к комнате
+  socket.join(`user:${userId}`)
+
+  socket.on('disconnect', () => {
+    console.log(`Пользователь ${userId} отключился от WebSocket`)
+  })
+})
+
+
 const PORT = process.env.PORT
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Backend server is running on http://localhost:${PORT}`)
 })

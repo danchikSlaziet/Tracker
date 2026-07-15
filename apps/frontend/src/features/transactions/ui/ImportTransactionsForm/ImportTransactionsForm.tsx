@@ -1,6 +1,18 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useImportTransactions } from '../../api/useTransactions'
 import styles from './ImportTransactionsForm.module.css'
+import { socket } from '@/shared/lib/socket'
+import { useImportProgress } from '@/features/transactions/model/useImportProgress'
+
+const stageLabels: Record<string, string> = {
+  reading_file: 'Читаем файл и категории...',
+  sending_to_gemini: 'Отправляем в нейросеть...',
+  analyzing: 'ИИ анализирует выписку...',
+  parsing_data: 'Обрабатываем транзакции...',
+  saving_database: 'Сохраняем в базу данных...',
+  completed: 'Импорт завершен!',
+  failed: 'Ошибка импорта',
+}
 
 export const ImportTransactionsForm = () => {
   const { mutate: importFile, isPending, error, isSuccess, data, reset } = useImportTransactions()
@@ -8,9 +20,34 @@ export const ImportTransactionsForm = () => {
   const [fileError, setFileError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const { importProgress, setImportProgress } = useImportProgress()
+
+  const activeStages = ['reading_file', 'sending_to_gemini', 'analyzing', 'parsing_data', 'saving_database']
+  const isImporting = isPending || (importProgress !== null && activeStages.includes(importProgress.stage))
+
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Фронтенд успешно подключился к сокету! ID:', socket.id)
+    })
+
+    socket.on('import:progress', (data) => {
+      setImportProgress(data)
+    })
+
+    // при размонтировании формы стопаем соединение,
+    return () => {
+      socket.off('connect')
+      socket.off('import:progress')
+      console.log('Фронтенд отключился от сокета.')
+    }
+  }, [])
+
+
   const MAX_FILE_SIZE = 10 * 1024 * 1024
 
   const processFile = (file: File) => {
+    setImportProgress(null)
     setFileError(null) // сбрасываем предыдущую ошибку
 
     if (!file.type.includes('pdf') && !file.name.endsWith('.pdf')) {
@@ -63,18 +100,17 @@ export const ImportTransactionsForm = () => {
   return (
     <div className={styles.container}>
       <h3>Импорт выписки банка (PDF)</h3>
-      <h3>Для работы включите VPN!</h3>
       <p className={styles.subtitle}>
         Загрузите выписку любого банка — наш ИИ распознает транзакции и разложит по вашим категориям.
       </p>
 
       <div
-        className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''} ${isPending ? styles.disabled : ''}`}
+        className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''} ${isImporting ? styles.disabled : ''}`}
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
-        onClick={!isPending ? triggerFileInput : undefined}
+        onClick={!isImporting ? triggerFileInput : undefined}
       >
         <input
           ref={fileInputRef}
@@ -82,27 +118,40 @@ export const ImportTransactionsForm = () => {
           accept=".pdf,application/pdf"
           className={styles.hiddenInput}
           onChange={handleFileChange}
-          disabled={isPending}
+          disabled={isImporting}
         />
 
-        {isPending ? (
+        {isImporting ? (
           <div className={styles.loadingContainer}>
-            <div className={styles.spinner}></div>
-            <p className={styles.statusText}>ИИ анализирует выписку...</p>
-            <p className={styles.loadingNote}>Это может занять 1-2 минуты для больших выписок (free api google gemini)</p>
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${importProgress?.percent ?? 0}%` }}
+              />
+            </div>
+            <p className={styles.statusText}>
+              {importProgress ? stageLabels[importProgress.stage] : 'Инициализация...'} {importProgress?.percent ?? 0}%
+            </p>
+            <p className={styles.loadingNote}>
+              Не закрывайте страницу до окончания импорта
+            </p>
           </div>
-        ) : isSuccess ? (
+
+        ) : (isSuccess || importProgress?.stage === 'completed') ? (
           <div className={styles.successContainer}>
             <div className={styles.successIcon}>🎉</div>
             <p className={styles.statusText}>Импорт завершен!</p>
             <p className={styles.successNote}>
-              Успешно добавлено <strong>{data?.importedCount}</strong> транзакций.
+              Успешно добавлено <strong>
+                {importProgress?.importedCount ?? data?.importedCount}
+              </strong> транзакций.
             </p>
             <button
               className={styles.resetBtn}
               onClick={(e) => {
                 e.stopPropagation()
                 reset()
+                setImportProgress(null)
               }}
             >
               Загрузить еще одну
@@ -127,6 +176,7 @@ export const ImportTransactionsForm = () => {
           <button className={styles.errorClose} onClick={() => {
             reset()
             setFileError(null)
+            setImportProgress(null)
           }}>✕</button>
         </div>
       )}
