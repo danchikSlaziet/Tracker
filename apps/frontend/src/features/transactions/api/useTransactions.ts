@@ -6,7 +6,7 @@ import {
   importTransactions,
   updateTransaction,
 } from './transactionsApi'
-import type { CreateTransactionDto } from '@finance/shared-types'
+import type { Category, CreateTransactionDto, Transaction } from '@finance/shared-types'
 import type { TransactionFilters } from '../model/transactionsSchema'
 import { QUERY_KEYS } from '@/shared/config/queryKeys'
 
@@ -26,16 +26,77 @@ export const useCreateTransaction = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createTransaction,
-    onSuccess: () => {
+
+    onMutate: async (newTxDto) => {
+
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
+      const snapshot = queryClient.getQueriesData<Transaction[]>({ queryKey: QUERY_KEYS.TRANSACTIONS })
+      const categories = queryClient.getQueryData<Category[]>([...QUERY_KEYS.CATEGORIES, undefined]) // в квери кей у категорий есть еще normalizedFilter (queryKey: [...QUERY_KEYS.CATEGORIES, normalizedFilter])
+      const matchedCategory = categories?.find((c) => c.id === newTxDto.categoryId) || {
+        id: newTxDto.categoryId,
+        name: 'Загрузка...',
+        icon: '🔄',
+        color: '#ccc',
+        type: newTxDto.type,
+      }
+
+      // временный объект транзакции
+      const tempTransaction: Transaction = {
+        id: `temp-id-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        category: matchedCategory,
+        ...newTxDto,
+      }
+
+      queryClient.setQueriesData<Transaction[]>(
+        { queryKey: QUERY_KEYS.TRANSACTIONS },
+        (old) => (old ? [tempTransaction, ...old] : [tempTransaction])
+      )
+      // контекст для отката
+      return { snapshot }
+    },
+
+    onError: (_err, _newTx, context) => {
+      if (context?.snapshot) {
+        context.snapshot.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data)
+        })
+      }
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
     }
   })
 }
+
 export const useDeleteTransaction = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: deleteTransaction,
-    onSuccess: () => {
+
+    onMutate: async (id: string) => {
+
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
+      // сохранили кэш для отката
+      const snapshot = queryClient.getQueriesData<Transaction[]>({ queryKey: QUERY_KEYS.TRANSACTIONS })
+
+      queryClient.setQueriesData(
+        { queryKey: QUERY_KEYS.TRANSACTIONS },
+        (old: Transaction[] | undefined) => Array.isArray(old) ? old.filter(t => t.id !== id) : old
+      )
+
+      return { snapshot }
+    },
+
+    onError: (_err, _id, context) => {
+      // откат к кэшу
+      context?.snapshot.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data)
+      })
+    },
+
+    onSettled: () => { // finally
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
     },
   })
