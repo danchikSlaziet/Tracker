@@ -6,10 +6,11 @@ import {
   importTransactions,
   updateTransaction,
 } from './transactionsApi'
+import type { CreateTransactionDto } from '@finance/shared-types'
 import type { TransactionFilters } from '../model/transactionsSchema'
 import { QUERY_KEYS } from '@/shared/config/queryKeys'
-import type { CreateTransactionDto } from '@finance/shared-types'
 
+// для дашборда
 export const useTransactions = (filters?: TransactionFilters) => {
 
   const hasActiveFilters = filters && Object.values(filters).some(val => val !== undefined && val !== '')
@@ -23,20 +24,15 @@ export const useTransactions = (filters?: TransactionFilters) => {
 
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: createTransaction,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.TRANSACTIONS,
-      })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
     }
   })
 }
-
 export const useDeleteTransaction = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: deleteTransaction,
     onSuccess: () => {

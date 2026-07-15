@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { Layout } from '@/widgets'
 import { lazy, Suspense, useEffect } from 'react'
-import { PageLoader } from '@/shared/ui'
+import { PageLoader } from '@finance/ui-kit'
 import { ROUTES } from '@/shared/config/routes'
 import { ProtectedRoute } from './ProtectedRoute'
 import { useThemeStore } from '@/shared/lib/useThemeStore'

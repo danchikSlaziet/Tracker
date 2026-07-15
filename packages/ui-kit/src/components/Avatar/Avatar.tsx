@@ -24,9 +24,11 @@ export function Avatar({ src, email, size = 'md', className }: AvatarProps) {
   } // при useEffect(..., [src]) лишний рендер, линтер не пропустит
 
 
-  const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '')
+  const apiUrl = import.meta.env.VITE_API_URL || ''
+  const baseUrl = apiUrl.replace('/api', '')
   const isAbsoluteUrl = src?.startsWith('http://') || src?.startsWith('https://')
   const fullSrc = src ? (isAbsoluteUrl ? src : `${baseUrl}${src}`) : null
+  
   const sizeClass = styles[size] || styles.md
 
   if (fullSrc && !hasError) {

@@ -1,4 +1,4 @@
-import { Button, Input } from '@/shared/ui'
+import { Button, Input } from '@finance/ui-kit'
 import styles from './LoginForm.module.css'
 import { useLoginForm } from './useLoginForm'
 import { Link } from 'react-router-dom'
