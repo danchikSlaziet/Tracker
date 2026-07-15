@@ -14,6 +14,7 @@ ENV VITE_TELEGRAM_BOT_USERNAME=$VITE_TELEGRAM_BOT_USERNAME
 COPY package*.json ./
 COPY apps/frontend/package*.json ./apps/frontend/
 COPY packages/shared-types/package*.json ./packages/shared-types/
+COPY packages/ui-kit/package*.json ./packages/ui-kit/
 
 # Устанавливаем зависимости
 RUN npm ci
@@ -21,6 +22,7 @@ RUN npm ci
 # Копируем исходники фронтенда и общих типов
 COPY apps/frontend ./apps/frontend
 COPY packages/shared-types ./packages/shared-types
+COPY packages/ui-kit ./packages/ui-kit
 
 # Собираем статический продакшен-бандл
 RUN npm run build --workspace=@finance/frontend
