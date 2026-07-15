@@ -22,6 +22,14 @@ vi.mock('@/entities/category/api/categoriesApi', () => ({
   createCategory: vi.fn()
 }))
 
+vi.mock('@/shared/lib/socket', () => ({
+  socket: {
+    on: vi.fn(),
+    off: vi.fn(),
+    disconnect: vi.fn(),
+  }
+}))
+
 describe('Интеграционный тест: TransactionWidget', () => {
   beforeEach(() => {
     vi.clearAllMocks()
