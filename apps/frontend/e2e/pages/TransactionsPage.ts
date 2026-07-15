@@ -43,6 +43,12 @@ export class TransactionsPage {
   async fillForm(data: TransactionFormValues) {
     await this.selectType(data.type);
     await this.amountInput.fill(data.amount);
+
+    // Ждём пока нужная опция появится — категории фильтруются по типу асинхронно
+    await this.categorySelect
+      .locator('option', { hasText: data.category })
+      .waitFor({ state: 'attached' });
+
     await this.categorySelect.selectOption({ label: data.category });
     await this.descriptionInput.fill(data.description);
   }
