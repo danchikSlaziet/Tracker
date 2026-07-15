@@ -159,6 +159,17 @@ transactionsRouter.patch('/:id', async (req, res) => {
 })
 
 transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
+
+  const io = req.app.get('io')
+
+  const emitProgress = (percent: number, stage: string, metadata?: any) => {
+    if (io) {
+      io.to(`user:${req.userId}`).emit('import:progress', { percent, stage, ...metadata })
+    }
+  }
+
+  let progressInterval: NodeJS.Timeout | undefined
+  
   try {
     const userId = req.userId
     if (!userId) {
@@ -174,6 +185,8 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       res.status(500).json({ error: 'Gemini API key отсутствует :(' })
       return
     }
+
+    emitProgress(10, 'reading_file')
 
     // 1. Получаем все существующие категории пользователя
     const categories = await prisma.category.findMany({
@@ -221,9 +234,23 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       }
     }
 
+
+    emitProgress(30, 'sending_to_gemini')
+
+    let currentPercent = 30
+    progressInterval = setInterval(() => {
+      if (currentPercent < 75) {
+        currentPercent += 5
+        emitProgress(currentPercent, 'analyzing')
+      }
+    }, 1000)
+
     // 4. Отправляем запрос в ИИ
     const result = await model.generateContent([prompt, pdfPart])
+    if (progressInterval) clearInterval(progressInterval)
+
     const responseText = result.response.text()
+    emitProgress(80, 'parsing_data')
 
     let parsedData
     try {
@@ -268,10 +295,12 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       }
     })
 
+    emitProgress(90, 'saving_database')
     // Массовое добавление в БД
     const created = await prisma.transaction.createMany({
       data: transactionsData
     })
+    emitProgress(100, 'completed', { importedCount: created.count })
 
     res.json({
       message: 'Импорт завершен успешно',
@@ -279,6 +308,10 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
     })
   } catch (error: any) {
     console.error('Import error:', error)
+
+    if (progressInterval) clearInterval(progressInterval)
+    emitProgress(0, 'failed', { error: error.message || 'Ошибка импорта' })
+
 
     const errorMessage = error.message || ''
 
