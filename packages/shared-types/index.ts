@@ -45,3 +45,13 @@ export interface TelegramAuthData {
   auth_date: number
   hash: string
 }
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  meta: {
+    totalCount: number
+    totalPages: number
+    currentPage: number
+    limit: number
+  }
+}

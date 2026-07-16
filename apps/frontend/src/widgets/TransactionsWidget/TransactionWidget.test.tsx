@@ -30,6 +30,10 @@ vi.mock('@/shared/lib/socket', () => ({
   }
 }))
 
+vi.mock('@/shared/lib/useIntersectionObserver', () => ({
+  useIntersectionObserver: vi.fn().mockReturnValue({ current: null })
+}))
+
 describe('Интеграционный тест: TransactionWidget', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -53,8 +57,16 @@ describe('Интеграционный тест: TransactionWidget', () => {
     vi.mocked(getCategories).mockResolvedValue([mockCategory] as any)
 
     // Once дает выстроить очередь, без него сразу будет мочиться mockResolvedValueOnce([newTransaction] as any)
-    vi.mocked(getTransactions).mockResolvedValueOnce([])
-    vi.mocked(getTransactions).mockResolvedValueOnce([newTransaction] as any)
+    vi.mocked(getTransactions).mockResolvedValueOnce({
+      data: [],
+      meta: { currentPage: 1, totalPages: 1, totalCount: 0, limit: 20 }
+    } as any)
+
+    vi.mocked(getTransactions).mockResolvedValueOnce({
+      data: [newTransaction],
+      meta: { currentPage: 1, totalPages: 1, totalCount: 1, limit: 20 }
+    } as any)
+
 
     vi.mocked(createTransaction).mockResolvedValue(newTransaction as any)
 
@@ -93,8 +105,14 @@ describe('Интеграционный тест: TransactionWidget', () => {
 
     vi.mocked(getCategories).mockResolvedValue([mockCategory] as any)
 
-    vi.mocked(getTransactions).mockResolvedValueOnce([oldTransaction] as any)
-    vi.mocked(getTransactions).mockResolvedValueOnce([])
+    vi.mocked(getTransactions).mockResolvedValueOnce({
+      data: [oldTransaction],
+      meta: { currentPage: 1, totalPages: 1, totalCount: 1, limit: 20 }
+    } as any)
+    vi.mocked(getTransactions).mockResolvedValueOnce({
+      data: [],
+      meta: { currentPage: 1, totalPages: 1, totalCount: 0, limit: 20 }
+    } as any)
 
     vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" })
 
