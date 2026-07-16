@@ -1,20 +1,53 @@
-import { useTransactions, useDeleteTransaction } from '../../api/useTransactions'
+import { useDeleteTransaction, useInfiniteTransactions } from '../../api/useTransactions'
 import { formatMoney } from '@/shared/lib/formatMoney'
 import styles from './TransactionList.module.css'
 import type { TransactionFilters } from '../../model/transactionsSchema'
 import { TransactionCategoryEditor } from '../TransactionCategoryEditor/TransactionCategoryEditor'
+import { useIntersectionObserver } from '@/shared/lib/useIntersectionObserver'
 
 interface TransactionListProps {
   filters?: TransactionFilters
 }
 
 export const TransactionList = ({ filters }: TransactionListProps) => {
-  const { data: transactions, isLoading, error } = useTransactions(filters)
+  const {
+    data,
+    isLoading,
+    error,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage
+  } = useInfiniteTransactions(filters, 20)
   const { mutate: deleteTransaction, isPending: isDeleting } = useDeleteTransaction()
+
+  // структура Tanstack => flatmap, иначе map внутри map придется делать
+
+  //   data.pages = [
+  //   // Страница 1
+  //   {
+  //     data: [ { id: 1, desc: 'Кофе' }, { id: 2, desc: 'Такси' } ],
+  //     meta: { currentPage: 1, totalPages: 3 }
+  //   },
+  //   // Страница 2 (подгрузилась при скролле)
+  //   {
+  //     data: [ { id: 3, desc: 'Метро' }, { id: 4, desc: 'Обед' } ],
+  //     meta: { currentPage: 2, totalPages: 3 }
+  //   }
+  // ]
+
+  const transactions = data?.pages.flatMap((page) => page.data) ?? []
+
+  const triggerRef = useIntersectionObserver(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  })
 
   if (isLoading) return <div>Загрузка транзакций...</div>
   if (error) return <div>Ошибка при загрузке транзакций.</div>
-  if (!transactions || transactions.length === 0) {
+
+
+  if (transactions.length === 0) {
     return <div className={styles.emptyState}>У вас пока нет транзакций. Добавьте первую!</div>
   }
 
@@ -59,6 +92,10 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
           </div>
         </div>
       ))}
+
+      <div ref={triggerRef} className={styles.trigger}>
+        {isFetchingNextPage && <div className={styles.loader}>Подгрузка транзакций...</div>}
+      </div>
     </div>
   )
 }
