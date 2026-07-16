@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../index'
 import multer from 'multer'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { PaginatedResponse } from '@finance/shared-types'
 
 export const transactionsRouter = Router()
 
@@ -24,11 +25,27 @@ const updateTransactionSchema = z.object({
   categoryId: z.string().uuid('Некорректный ID категории')
 }).partial()
 
+const getTransactionsSchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  type: z.enum(['income', 'expense']).optional(),
+  categoryId: z.string().uuid().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  search: z.string().optional(),
+})
 
 
 transactionsRouter.get('/', async (req, res) => {
   const userId = req.userId
-  const { type, categoryId, dateFrom, dateTo, search } = req.query
+  const parsed = getTransactionsSchema.safeParse(req.query)
+
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues[0].message })
+    return
+  }
+
+  const { page, limit, type, categoryId, dateFrom, dateTo, search } = parsed.data
 
   const where: any = {
     userId,
@@ -56,16 +73,33 @@ transactionsRouter.get('/', async (req, res) => {
     }
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    orderBy: [
-      { date: 'desc' },
-      { id: 'desc' }
-    ],
-    include: { category: true },
-  })
+  const isPaginated = page !== undefined && limit !== undefined
+  const skip = isPaginated ? (page - 1) * limit : undefined
+  const take = isPaginated ? limit : undefined
 
-  res.json(transactions)
+  const [transactions, totalCount] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: [
+        { date: 'desc' },
+        { id: 'desc' }
+      ],
+      include: { category: true },
+      skip,
+      take,
+    }),
+    prisma.transaction.count({ where })
+  ])
+  const response: PaginatedResponse<any> = {
+    data: transactions,
+    meta: {
+      totalCount,
+      totalPages: isPaginated ? Math.ceil(totalCount / limit) : 1,
+      currentPage: isPaginated ? page : 1,
+      limit: isPaginated ? limit : totalCount,
+    }
+  }
+  res.json(response)
 })
 
 
@@ -169,7 +203,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
   }
 
   let progressInterval: NodeJS.Timeout | undefined
-  
+
   try {
     const userId = req.userId
     if (!userId) {

@@ -1,9 +1,9 @@
 import { httpClient } from '@/shared/api'
-import type { Transaction, CreateTransactionDto } from '@finance/shared-types'
+import type { Transaction, CreateTransactionDto, PaginatedResponse } from '@finance/shared-types'
 import type { TransactionFilters } from '../model/transactionsSchema'
 
-export const getTransactions = (filters?: TransactionFilters) =>
-  httpClient.get<Transaction[]>('/transactions', {
+export const getTransactions = (filters?: TransactionFilters & { page?: number; limit?: number }) =>
+  httpClient.get<PaginatedResponse<Transaction>>('/transactions', {
     params: filters,
   }).then(res => res.data)
 

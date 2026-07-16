@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import {
   getTransactions,
   createTransaction,
@@ -6,9 +6,13 @@ import {
   importTransactions,
   updateTransaction,
 } from './transactionsApi'
-import type { Category, CreateTransactionDto, Transaction } from '@finance/shared-types'
+import type { Category, CreateTransactionDto, PaginatedResponse, Transaction } from '@finance/shared-types'
 import type { TransactionFilters } from '../model/transactionsSchema'
 import { QUERY_KEYS } from '@/shared/config/queryKeys'
+import type { InfiniteData } from '@tanstack/react-query'
+
+type TransactionCache = PaginatedResponse<Transaction> | InfiniteData<PaginatedResponse<Transaction>>
+
 
 // для дашборда
 export const useTransactions = (filters?: TransactionFilters) => {
@@ -19,6 +23,25 @@ export const useTransactions = (filters?: TransactionFilters) => {
   return useQuery({
     queryKey: [...QUERY_KEYS.TRANSACTIONS, normalizedFilters],
     queryFn: () => getTransactions(normalizedFilters),
+    select: (response) => response.data
+  })
+}
+
+export const useInfiniteTransactions = (filters?: TransactionFilters, limit = 20) => {
+
+  const hasActiveFilters = filters && Object.values(filters).some(val => val !== undefined && val !== '')
+  const normalizedFilters = hasActiveFilters ? filters : undefined
+
+  return useInfiniteQuery({
+    // передаем фильтры и лимит, чтобы кэш инвалидировался при их изменении
+    queryKey: [...QUERY_KEYS.TRANSACTIONS, 'infinite', normalizedFilters, limit],
+    queryFn: ({ pageParam = 1 }) =>
+      getTransactions({ ...normalizedFilters, page: pageParam, limit }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage.meta
+      return currentPage < totalPages ? currentPage + 1 : undefined
+    },
   })
 }
 
@@ -48,9 +71,31 @@ export const useCreateTransaction = () => {
         ...newTxDto,
       }
 
-      queryClient.setQueriesData<Transaction[]>(
+      queryClient.setQueriesData<TransactionCache>(
         { queryKey: QUERY_KEYS.TRANSACTIONS },
-        (old) => (old ? [tempTransaction, ...old] : [tempTransaction])
+        (old) => {
+          if (!old) return old
+
+          // для пагинации: infinte query
+          if ('pages' in old) {
+            return {
+              ...old,
+              pages: old.pages.map((page, idx) =>
+                idx === 0 ? { ...page, data: [tempTransaction, ...page.data] } : page
+              )
+            }
+          }
+
+          // для дашборда: обычная структура пагинации 
+          if ('data' in old) {
+            return {
+              ...old,
+              data: [tempTransaction, ...old.data]
+            }
+          }
+
+          return old
+        }
       )
       // контекст для отката
       return { snapshot }
@@ -81,9 +126,32 @@ export const useDeleteTransaction = () => {
       // сохранили кэш для отката
       const snapshot = queryClient.getQueriesData<Transaction[]>({ queryKey: QUERY_KEYS.TRANSACTIONS })
 
-      queryClient.setQueriesData(
+      queryClient.setQueriesData<TransactionCache>(
         { queryKey: QUERY_KEYS.TRANSACTIONS },
-        (old: Transaction[] | undefined) => Array.isArray(old) ? old.filter(t => t.id !== id) : old
+        (old) => {
+          if (!old) return old
+
+          // для пагинации: infinte query
+          if ('pages' in old) {
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: page.data.filter((t) => t.id !== id)
+              }))
+            }
+          }
+
+          // для дашборда: обычная структура пагинации 
+          if ('data' in old) {
+            return {
+              ...old,
+              data: old.data.filter((t) => t.id !== id)
+            }
+          }
+
+          return old
+        }
       )
 
       return { snapshot }
