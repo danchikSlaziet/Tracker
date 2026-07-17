@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { deleteAvatarUrl, uploadAvatarUrl } from "./profileApi"
-import { QUERY_KEYS } from "@/shared/config/queryKeys"
+import { QUERY_KEYS } from "@/shared/config"
 
 export const useUploadAvatar = () => {
   const queryClient = useQueryClient()

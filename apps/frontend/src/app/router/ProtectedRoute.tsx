@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useMe } from '@/features/auth/api/useMe'
+import { useMe } from '@/features/auth'
 import { PageLoader } from '@finance/ui-kit'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 
 export function ProtectedRoute() {
   const { data, isLoading, isError } = useMe()

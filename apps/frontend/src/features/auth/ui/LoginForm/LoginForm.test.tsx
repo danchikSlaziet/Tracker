@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/shared/lib/test-utils'
 import { LoginForm } from './LoginForm'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { useLogin } from '../../api/useLogin'
 
 // замочили хук

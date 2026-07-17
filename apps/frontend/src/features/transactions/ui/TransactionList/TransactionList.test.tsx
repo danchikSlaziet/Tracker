@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { screen } from "@testing-library/dom";
 import { renderWithProviders } from "@/shared/lib/test-utils";
 import { TransactionList } from "./TransactionList";
-import { ROUTES } from "@/shared/config/routes";
+import { ROUTES } from "@/shared/config";
 
 vi.mock('../../api/useTransactions', () => ({
   useDeleteTransaction: vi.fn(),

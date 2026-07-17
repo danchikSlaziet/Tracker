@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useImportTransactions } from '../../api/useTransactions'
 import styles from './ImportTransactionsForm.module.css'
 import { socket } from '@/shared/lib/socket'
-import { useImportProgress } from '@/features/transactions/model/useImportProgress'
+import { useImportProgress } from '../../model/useImportProgress'
 
 const stageLabels: Record<string, string> = {
   reading_file: 'Читаем файл и категории...',

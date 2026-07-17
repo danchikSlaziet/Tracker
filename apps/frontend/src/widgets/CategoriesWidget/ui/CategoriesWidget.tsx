@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { useCreateCategory, useUpdateCategory } from '@/entities/category/api/useCategories'
-import type { Category } from '@finance/shared-types'
-import type { CategoryFormValues } from '@/features/caregories/model/categorySchema'
-import { CategoryForm } from '@/features/caregories/ui/CategoryForm/CategoryForm'
-import { CategoryList } from '@/features/caregories/ui/CategoryList/CategoryList'
+import { useCreateCategory, useUpdateCategory } from '@/entities/category'
+import type { Category } from '@/entities/category'
+import { CategoryForm, CategoryList, type CategoryFormValues } from '@/features/caregories'
 import styles from './CategoriesWidget.module.css'
 
 export const CategoriesWidget = () => {

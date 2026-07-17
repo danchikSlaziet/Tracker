@@ -1,13 +1,12 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.css'
-import { useLogout } from '@/features/auth/api/useLogout'
-import { ROUTES } from '@/shared/config/routes'
+import { useLogout, useMe } from '@/features/auth'
+import { ROUTES } from '@/shared/config'
 import { Suspense, useState } from 'react'
 import { PageLoader } from '@finance/ui-kit'
-import { useMe } from '@/features/auth/api/useMe'
 import { Avatar } from '@finance/ui-kit'
-import { ProfileModal } from '@/features/profile/ui/ProfileModal'
-import { ThemeSwitcher } from '@/features/theme/ui/ThemeSwitcher/ThemeSwitcher'
+import { ProfileModal } from '@/features/profile'
+import { ThemeSwitcher } from '@/features/theme'
 
 export function Layout() {
   const { mutate: logout, isPending } = useLogout()

@@ -1,5 +1,4 @@
-import { useTransactions } from "@/features/transactions/api/useTransactions"
-import { ExpensesPieChart } from "@/features/transactions/ui/ExpensesPieChart/ExpensesPieChart"
+import { useTransactions, ExpensesPieChart } from "@/features/transactions"
 import styles from './DashboardWidget.module.css'
 import { formatMoney } from "@/shared/lib"
 

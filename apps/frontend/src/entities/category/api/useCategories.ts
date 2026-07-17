@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createCategory, deleteCategory, getCategories, restoreCategory, updateCategory, type CreateCategoryDto } from "./categoriesApi"
 import type { CategoriesFilter } from "../model/CategoryFilter"
-import { QUERY_KEYS } from "@/shared/config/queryKeys"
+import { QUERY_KEYS } from "@/shared/config"
 
 export const useCategories = (filter?: CategoriesFilter) => {
   const normalizedFilter = filter?.onlyDeleted ? filter : undefined // чтобы не мешались два одинаковых запроса без квери и с onlyDeleted: false, танстак думает что кэш надо обновить

@@ -1,5 +1,5 @@
 import styles from './TransactionsPage.module.css'
-import { TransactionWidget } from '@/widgets/TransactionsWidget/TransactionsWidget'
+import { TransactionWidget } from '@/widgets/TransactionsWidget'
 
 export const TransactionsPage = () => {
   return (
