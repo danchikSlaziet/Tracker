@@ -1,12 +1,14 @@
-import { CreateTransactionForm } from "@/features/transactions/ui/CreateTransactionForm/CreateTransactionForm"
-import { TransactionFiltersPanel } from "@/features/transactions/ui/TransactionFilters/TransactionFilters"
-import { TransactionList } from "@/features/transactions/ui/TransactionList/TransactionList"
-
 import styles from './TransactionsWidget.module.css'
 import { useState } from "react"
-import type { TransactionFilters } from "@/features/transactions/model/transactionsSchema"
+import {
+  CreateTransactionForm,
+  TransactionFiltersPanel,
+  TransactionList,
+  ImportTransactionsForm,
+  type TransactionFilters
+} from "@/features/transactions"
+
 import { useDebounce } from "@/shared/lib/useDebounce"
-import { ImportTransactionsForm } from "@/features/transactions/ui/ImportTransactionsForm/ImportTransactionsForm"
 
 export const TransactionWidget = () => {
   const [filters, setFilters] = useState<TransactionFilters>({})

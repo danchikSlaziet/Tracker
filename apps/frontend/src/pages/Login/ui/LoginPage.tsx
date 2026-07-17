@@ -1,6 +1,6 @@
 import { LoginForm } from '@/features/auth'
 import styles from './LoginPage.module.css'
-import { ThemeSwitcher } from '@/features/theme/ui/ThemeSwitcher/ThemeSwitcher'
+import { ThemeSwitcher } from '@/features/theme'
 
 export function LoginPage() {
   return (

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { verifyOtp, resendOtp } from '../../api/authApi'
 import { useMe } from '../../api/useMe'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { verifySchema, type VerifyFormValues } from '../../model/verifySchema'
 import { useLogout } from '../../api/useLogout'
 

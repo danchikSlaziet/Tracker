@@ -1,6 +1,6 @@
 import styles from './RegisterPage.module.css'
-import { RegisterForm } from '@/features/auth/ui/RegisterForm/RegisterForm'
-import { ThemeSwitcher } from '@/features/theme/ui/ThemeSwitcher/ThemeSwitcher'
+import { RegisterForm } from '@/features/auth'
+import { ThemeSwitcher } from '@/features/theme'
 
 export function RegisterPage() {
   return (

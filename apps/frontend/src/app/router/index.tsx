@@ -1,28 +1,28 @@
 import { Routes, Route } from 'react-router-dom'
-import { Layout } from '@/widgets'
+import { Layout } from '@/widgets/Layout'
 import { lazy, Suspense, useEffect } from 'react'
 import { PageLoader } from '@finance/ui-kit'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { ProtectedRoute } from './ProtectedRoute'
 import { useThemeStore } from '@/shared/lib/useThemeStore'
-import { VerifyPage } from '@/pages/VerifyPage/VerifyPage'
+import { VerifyPage } from '@/pages/Verify'
 
 
 // лень))
 const DashboardPage = lazy(() =>
-  import('@/pages/DashboardPage/DashboardPage').then(m => ({ default: m.DashboardPage }))
+  import('@/pages/Dashboard').then(m => ({ default: m.DashboardPage }))
 )
 const LoginPage = lazy(() =>
-  import('@/pages/LoginPage/LoginPage').then(m => ({ default: m.LoginPage }))
+  import('@/pages/Login').then(m => ({ default: m.LoginPage }))
 )
 const RegisterPage = lazy(() =>
-  import('@/pages/RegisterPage/RegisterPage').then(m => ({ default: m.RegisterPage }))
+  import('@/pages/Register').then(m => ({ default: m.RegisterPage }))
 )
 const CategoriesPage = lazy(() =>
-  import('@/pages/CategoriesPage/CategoriesPage').then(m => ({ default: m.CategoriesPage }))
+  import('@/pages/Categories').then(m => ({ default: m.CategoriesPage }))
 )
 const TransactionsPage = lazy(() =>
-  import('@/pages/TransactionsPage/TransactionsPage').then(m => ({ default: m.TransactionsPage }))
+  import('@/pages/Transactions').then(m => ({ default: m.TransactionsPage }))
 )
 
 function ThemeProvider() {

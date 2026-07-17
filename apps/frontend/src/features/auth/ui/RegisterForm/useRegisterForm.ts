@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useRegister } from "../../api/useRegister";
 import { loginSchema, type LoginFormValues } from "../../model/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ROUTES } from "@/shared/config/routes";
+import { ROUTES } from "@/shared/config";
 import { useTelegramAuth } from "../../api/useTelegramAuth";
 import type { TelegramAuthData } from "@finance/shared-types";
 

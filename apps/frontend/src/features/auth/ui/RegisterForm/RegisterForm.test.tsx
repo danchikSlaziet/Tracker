@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/shared/lib/test-utils'
 import { RegisterForm } from './RegisterForm'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { useRegister } from '../../api/useRegister'
 
 // подменяем реальное апи

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { useCategories, useCreateCategory } from '@/entities/category/api/useCategories'
+import { useCategories, useCreateCategory } from '@/entities/category'
 import { useUpdateTransactions } from '../../api/useTransactions'
 import styles from './TransactionCategoryEditor.module.css'
-import type { Category } from '@finance/shared-types';
+import type { Category } from '@/entities/category';
 
 interface TransactionCategoryEditorProps {
   transactionId: string;

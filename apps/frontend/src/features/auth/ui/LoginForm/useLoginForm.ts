@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { loginSchema, type LoginFormValues } from '../../model/loginSchema'
 import { useLogin } from '../../api/useLogin'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { useTelegramAuth } from '../../api/useTelegramAuth'
 import type { TelegramAuthData } from '@finance/shared-types'
 

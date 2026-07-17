@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/shared/lib/test-utils'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 
 
-import { getTransactions, createTransaction, deleteTransaction } from '@/features/transactions/api/transactionsApi'
-import { getCategories } from '@/entities/category/api/categoriesApi'
+import { getTransactions, createTransaction, deleteTransaction } from '@/features/transactions'
+import { getCategories } from '@/entities/category'
 import { TransactionWidget } from './TransactionsWidget'
 
 

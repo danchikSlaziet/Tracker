@@ -1,16 +1,16 @@
-import { useCategories } from '@/entities/category/api/useCategories'
+import { useCategories } from '@/entities/category'
 import { beforeEach, describe, vi } from 'vitest'
 import { useCreateTransaction } from '../../api/useTransactions'
 import { it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/shared/lib/test-utils'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { CreateTransactionForm } from './CreateTransactionForm'
 
 
 
-vi.mock('@/entities/category/api/useCategories', () => ({
+vi.mock('@/entities/category', () => ({
   useCategories: vi.fn()
 }))
 vi.mock('../../api/useTransactions', () => ({

@@ -1,5 +1,5 @@
 import styles from './DashboardPage.module.css'
-import { DashboardWidget } from '@/widgets/DashboardWidget/DashboardWidget'
+import { DashboardWidget } from '@/widgets/DashboardWidget'
 
 export function DashboardPage() {
   return (

@@ -1,4 +1,4 @@
-import type { Transaction } from "@finance/shared-types";
+import type { Transaction } from "@/entities/transaction";
 import { useMemo } from "react";
 import { Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import styles from './ExpensesPieChart.module.css'
