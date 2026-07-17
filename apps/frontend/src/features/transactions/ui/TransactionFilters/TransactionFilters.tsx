@@ -1,5 +1,5 @@
 
-import { useCategories } from '@/entities/category/api/useCategories'
+import { useCategories } from '@/entities/category'
 import styles from './TransactionFilters.module.css'
 import type { TransactionFilters } from '../../model/transactionsSchema'
 import { Input } from '@finance/ui-kit'

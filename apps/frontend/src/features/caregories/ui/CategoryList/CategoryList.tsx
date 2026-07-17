@@ -1,5 +1,5 @@
-import { useCategories, useDeleteCategory, useRestoreCategory } from '@/entities/category/api/useCategories'
-import type { Category } from '@finance/shared-types'
+import { useCategories, useDeleteCategory, useRestoreCategory } from '@/entities/category'
+import type { Category } from '@/entities/category'
 import styles from './CategoryList.module.css'
 import { useState } from 'react'
 

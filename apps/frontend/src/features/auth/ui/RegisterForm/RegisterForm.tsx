@@ -2,7 +2,7 @@ import { Button, Input } from '@finance/ui-kit'
 import styles from './RegisterForm.module.css'
 import { useRegisterForm } from './useRegisterForm'
 import { Link } from 'react-router-dom'
-import { ROUTES } from '@/shared/config/routes'
+import { ROUTES } from '@/shared/config'
 import { TelegramLoginButton } from '../TelegramLogin/TelegramLoginButton'
 
 export function RegisterForm() {

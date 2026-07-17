@@ -6,9 +6,11 @@ import {
   importTransactions,
   updateTransaction,
 } from './transactionsApi'
-import type { Category, CreateTransactionDto, PaginatedResponse, Transaction } from '@finance/shared-types'
+import type { PaginatedResponse } from '@finance/shared-types'
+import type { Transaction, CreateTransactionDto } from '@/entities/transaction'
+import type { Category } from '@/entities/category'
 import type { TransactionFilters } from '../model/transactionsSchema'
-import { QUERY_KEYS } from '@/shared/config/queryKeys'
+import { QUERY_KEYS } from '@/shared/config'
 import type { InfiniteData } from '@tanstack/react-query'
 
 type TransactionCache = PaginatedResponse<Transaction> | InfiniteData<PaginatedResponse<Transaction>>

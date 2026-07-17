@@ -1,1 +1,1 @@
-export type { Transaction, CreateTransactionDto, TransactionType } from '@finance/shared-types'
+export type { Transaction, CreateTransactionDto, TransactionType } from './model/types'

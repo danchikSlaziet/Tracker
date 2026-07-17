@@ -1,5 +1,5 @@
 import styles from './CategoriesPage.module.css'
-import { CategoriesWidget } from '@/widgets/CategoriesWidget/CategoriesWidget'
+import { CategoriesWidget } from '@/widgets/CategoriesWidget'
 
 export const CategoriesPage = () => {
   return (
