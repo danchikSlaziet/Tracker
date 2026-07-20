@@ -2,19 +2,40 @@
 import { defineConfig, configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { loadEnv } from 'vite'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  const plugins: any[] = [react()]
+
+  if (env.SENTRY_AUTH_TOKEN) {
+    plugins.push(
+      sentryVitePlugin({
+        authToken: env.SENTRY_AUTH_TOKEN,
+        org: '123-aow',
+        project: 'finance-tracker',
+      })
+    )
+  }
+
+  return {
+    plugins,
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
     },
-  },
-  test: {
-    globals: true, // describe/it и т.д. без импортов
-    environment: 'jsdom', // вирт. браузер
-    setupFiles: './src/setupTests.ts', // кастомные проверки (там jest-dom matchers)
-    exclude: [...configDefaults.exclude, 'e2e/**'], // иначе vitest тесты прогоняют и playwright
+    build: {
+      sourcemap: true, // генерация source maps для Sentry
+    },
+    test: {
+      globals: true, // describe/it и т.д. без импортов
+      environment: 'jsdom', // вирт. браузер
+      setupFiles: './src/setupTests.ts', // кастомные проверки (там jest-dom matchers)
+      exclude: [...configDefaults.exclude, 'e2e/**'], // иначе vitest тесты прогоняют и playwright
+    }
   }
 })
