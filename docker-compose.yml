@@ -53,6 +53,8 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL}
         VITE_TELEGRAM_BOT_USERNAME: ${VITE_TELEGRAM_BOT_USERNAME}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+        SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
     container_name: finance_frontend
     restart: always
     ports:

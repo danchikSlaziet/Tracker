@@ -10,6 +10,14 @@ ENV VITE_API_URL=$VITE_API_URL
 ARG VITE_TELEGRAM_BOT_USERNAME
 ENV VITE_TELEGRAM_BOT_USERNAME=$VITE_TELEGRAM_BOT_USERNAME
 
+# Передаем Sentry DSN на этапе сборки
+ARG VITE_SENTRY_DSN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+
+# Передаем токен авторизации Sentry для загрузки source maps
+ARG SENTRY_AUTH_TOKEN
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+
 # Копируем конфигурацию монорепозитория
 COPY package*.json ./
 COPY apps/frontend/package*.json ./apps/frontend/
