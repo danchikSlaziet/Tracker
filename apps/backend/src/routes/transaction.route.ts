@@ -236,6 +236,8 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       generationConfig: {
         responseMimeType: 'application/json',
       }
+    }, {
+      baseUrl: process.env.GEMINI_API_BASE_URL || undefined
     })
 
     const prompt = `
@@ -355,7 +357,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       errorMessage.includes('fetch failed')
     ) {
       res.status(403).json({
-        error: 'Не удалось подключиться к Google Gemini API. Убедитесь, что у вас включен VPN (сервис недоступен в вашем регионе).'
+        error: 'Не удалось подключиться к Google Gemini API.'
       })
       return
     }
