@@ -4,6 +4,9 @@ import styles from './ImportTransactionsForm.module.css'
 import { socket } from '@/shared/lib/socket'
 import { useImportProgress } from '../../model/useImportProgress'
 
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '@/shared/config'
+
 const stageLabels: Record<string, string> = {
   reading_file: 'Читаем файл и категории...',
   sending_to_gemini: 'Отправляем в нейросеть...',
@@ -15,6 +18,7 @@ const stageLabels: Record<string, string> = {
 }
 
 export const ImportTransactionsForm = () => {
+  const queryClient = useQueryClient()
   const { mutate: importFile, isPending, error, isSuccess, data, reset } = useImportTransactions()
   const [isDragActive, setIsDragActive] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
@@ -33,6 +37,11 @@ export const ImportTransactionsForm = () => {
 
     socket.on('import:progress', (data) => {
       setImportProgress(data)
+      // Если сокет сообщил, что импорт в базу успешно завершен — мгновенно обновляем списки
+      if (data?.stage === 'completed') {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES })
+      }
     })
 
     // при размонтировании формы стопаем соединение,
@@ -42,6 +51,7 @@ export const ImportTransactionsForm = () => {
       console.log('Фронтенд отключился от сокета.')
     }
   }, [])
+
 
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024
