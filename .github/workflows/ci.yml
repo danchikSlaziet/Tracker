@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: ["main", "dev"]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: ["main", "dev"]
 
 jobs:
   lint-and-build:
@@ -17,8 +17,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -39,8 +39,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -52,7 +52,7 @@ jobs:
   test-e2e:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
-    
+
     # Поднимаем настоящую базу PostgreSQL в фоне специально для тестов
     services:
       postgres:
@@ -83,8 +83,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -101,7 +101,7 @@ jobs:
 
       - name: Run Backend (Background)
         run: npm run dev --workspace=@finance/backend &
-        
+
       - name: Wait for backend to be ready
         # Флаг --yes нужен, чтобы npx в облаке не спрашивал "Proceed? (y/n)"
         run: npx --yes wait-on tcp:3000
@@ -137,6 +137,7 @@ jobs:
       CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
+      GEMINI_API_BASE_URL: ${{ secrets.GEMINI_API_BASE_URL }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       VITE_API_URL: ${{ secrets.VITE_API_URL }}
       VITE_TELEGRAM_BOT_USERNAME: ${{ secrets.VITE_TELEGRAM_BOT_USERNAME }}
@@ -149,11 +150,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DB_USER,DB_PASSWORD,DB_NAME,JWT_SECRET,RESEND_API_KEY,CORS_ORIGIN,GEMINI_API_KEY,GEMINI_MODEL,TELEGRAM_BOT_TOKEN,VITE_API_URL,VITE_TELEGRAM_BOT_USERNAME,VITE_SENTRY_DSN,SENTRY_AUTH_TOKEN
+          envs: DB_USER,DB_PASSWORD,DB_NAME,JWT_SECRET,RESEND_API_KEY,CORS_ORIGIN,GEMINI_API_KEY,GEMINI_MODEL,GEMINI_API_BASE_URL,TELEGRAM_BOT_TOKEN,VITE_API_URL,VITE_TELEGRAM_BOT_USERNAME,VITE_SENTRY_DSN,SENTRY_AUTH_TOKEN
           script: |
             cd ~/Tracker
             git pull origin main
-            
+
             # Полностью перезаписываем .env файл на сервере актуальными секретами из GitHub Actions
             cat << EOF > .env
             DB_USER="$DB_USER"
@@ -164,11 +165,12 @@ jobs:
             CORS_ORIGIN="$CORS_ORIGIN"
             GEMINI_API_KEY="$GEMINI_API_KEY"
             GEMINI_MODEL="$GEMINI_MODEL"
+            GEMINI_API_BASE_URL="$GEMINI_API_BASE_URL"
             TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN"
             VITE_API_URL="$VITE_API_URL"
             VITE_TELEGRAM_BOT_USERNAME="$VITE_TELEGRAM_BOT_USERNAME"
             VITE_SENTRY_DSN="$VITE_SENTRY_DSN"
             SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN"
             EOF
-            
+
             docker compose up --build -d
