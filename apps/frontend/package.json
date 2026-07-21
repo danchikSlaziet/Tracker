@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "analyze": "ANALYZE=true npm run build",
     "lint": "eslint . && npm run lint:fsd",
     "lint:fsd": "steiger ./src",
     "preview": "vite preview",
@@ -49,6 +50,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
+    "rollup-plugin-visualizer": "^7.0.1",
     "steiger": "^0.6.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
