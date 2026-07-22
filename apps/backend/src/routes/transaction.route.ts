@@ -249,7 +249,12 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
         - amount: Сумма в рублях (всегда положительное число с плавающей точкой)
         - type: Тип транзакции: "income" (если деньги пришли/пополнение/зарплата/перевод вам) или "expense" (если деньги ушли/покупка/перевод кому-то/снятие)
         - description: Понятное описание (название магазина, категория услуги или имя отправителя перевода)
-        - categoryId: Выбери наиболее подходящий ID категории из предоставленного ниже списка. Если ни одна категория не подходит, укажи null.
+        - categoryId: Выбери наиболее подходящий ID категории из предоставленного ниже списка. Если ни одна существующая категория не подходит для этой транзакции, укажи null.
+        - newCategory: Если categoryId равен null (категория не найдена в списке), создай для транзакции объект новой категории. Если categoryId заполнен, укажи null. 
+          Объект newCategory должен содержать следующие поля:
+          * name: Короткое и понятное название новой категории на русском языке (например, "Аптеки", "Спорт", "Аренда", "Коммунальные платежи", "Стриминг"). Максимум 2 слова.
+          * icon: Один наиболее подходящий emoji-символ (например, "💊" для аптек, "🍿" для кино).
+          * color: Подходящий HEX-цвет для этой категории (например, "#ef4444").
 
         ПРАВИЛО ДЛЯ ВНУТРЕННИХ ПЕРЕВОДОВ:
         Если транзакция является внутренним переводом между собственными счетами, переводом на инвесткопилку, сейф-пакет или между своими картами/счетами в любых банках:
@@ -261,6 +266,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
 
         Верни строго валидный JSON-массив объектов с указанными полями. Не пиши никакого сопроводительного текста, только JSON.
       `
+
 
     // 3. Переводим буфер файла в base64 для API
     const pdfPart = {
@@ -279,7 +285,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
         currentPercent += 5
         emitProgress(currentPercent, 'analyzing')
       }
-    }, 1000)
+    }, 5000)
 
     // 4. Отправляем запрос в ИИ
     const result = await model.generateContent([prompt, pdfPart])
@@ -316,14 +322,77 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       })
     }
 
-    // 6. Подготавливаем транзакции для сохранения (с переводом суммы в копейки)
+    // 5.1 Обрабатываем новые категории, которые предложил ИИ
+
+    const categoryCache = new Map<string, string>()
+    for (const cat of categories) {
+      categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
+    }
+    categoryCache.set('неразобранное', unsortedCategory.id)
+
+    // через Map отсеиваем дубликаты внутри иишных категорий
+    const newCategoriesToCreate = new Map<string, { name: string, icon: string, color: string, type: 'income' | 'expense' }>()
+
+    for (const t of parsedData) {
+      if (!t.categoryId && t.newCategory && t.newCategory.name) {
+        const catName = t.newCategory.name.trim()
+        const catNameLower = catName.toLowerCase()
+
+        // если такой категории еще нет в базе пользователя и мы ее еще не запланировали создать:
+        if (!categoryCache.has(catNameLower) && !newCategoriesToCreate.has(catNameLower)) {
+          newCategoriesToCreate.set(catNameLower, {
+            name: catName,
+            icon: t.newCategory.icon || '📁',
+            color: t.newCategory.color || '#94a3b8',
+            type: t.type === 'income' ? 'income' : 'expense'
+          })
+        }
+      }
+    }
+
+    // создаем новые иишные категории
+    if (newCategoriesToCreate.size > 0) {
+      // createMany в Prisma/Postgres не умеет возвращать сгенерированные ID записей (??? чзнх)
+      const createdCategories = await Promise.all(
+        Array.from(newCategoriesToCreate.values()).map(async (catData) => {
+          const newCat = await prisma.category.create({
+            data: {
+              name: catData.name,
+              icon: catData.icon,
+              color: catData.color,
+              type: catData.type,
+              userId
+            }
+          })
+          return newCat
+        })
+      )
+
+      // добавляем созданные категории в наш кэш, чтобы привязать их к транзакциям
+      for (const cat of createdCategories) {
+        categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
+      }
+    }
+
+    // 6. готовим транзакции для сохранения
     const transactionsData = parsedData.map(t => {
-      const hasValidCategory = categories.some(c => c.id === t.categoryId)
-      const finalCategoryId = hasValidCategory ? t.categoryId : unsortedCategory!.id
+      let finalCategoryId = unsortedCategory!.id
+
+      if (t.categoryId && categories.some(c => c.id === t.categoryId)) {
+        // если ИИ выбрал существующую категорию
+        finalCategoryId = t.categoryId
+      } else if (t.newCategory && t.newCategory.name) {
+        // если ИИ предложил новую категорию — ищем её ID в нашем кэше созданных категорий
+        const catNameLower = t.newCategory.name.trim().toLowerCase()
+        const cachedId = categoryCache.get(catNameLower)
+        if (cachedId) {
+          finalCategoryId = cachedId
+        }
+      }
 
       return {
         type: t.type === 'income' ? 'income' : 'expense',
-        amount: Math.round((Number(t.amount) || 0) * 100), // сохраняем в копейках
+        amount: Math.round((Number(t.amount) || 0) * 100), // в копейках
         description: t.description || 'Импортированная транзакция',
         date: t.date ? new Date(t.date) : new Date(),
         categoryId: finalCategoryId,
