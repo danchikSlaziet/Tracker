@@ -1,43 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* Светлая тема */
 :root {
-  --bg-primary: #f9fafb;
+  --bg-primary: #fafafa;
   --bg-secondary: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
-  --accent-primary: #111827;
-  --accent-hover: #374151;
-  --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --text-primary: #09090b;
+  --text-secondary: #71717a;
+  --border-color: #e4e4e7;
+  --accent-primary: #09090b;
+  --accent-hover: #27272a;
+  --accent-text: #ffffff;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   --input-bg: #ffffff;
   --danger: #ef4444;
   --success: #10b981;
+  --radius: 8px;
+  --focus-ring: rgba(9, 9, 11, 0.2);
 }
 
 /* Тёмная тема */
 [data-theme="dark"] {
-  --bg-primary: #0f0f13;
-  --bg-secondary: #13131f;
-  --text-primary: #f1f1f3;
-  --text-secondary: #9ca3af;
-  --border-color: #1f2937;
-  --accent-primary: #ffffff;
-  --accent-hover: #e5e7eb;
-  --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  --input-bg: rgba(255, 255, 255, 0.05);
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --border-color: #27272a;
+  --accent-primary: #fafafa;
+  --accent-hover: #e4e4e7;
+  --accent-text: #09090b;
+  --card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --input-bg: #18181b;
   --danger: #ef4444;
   --success: #10b981;
+  --focus-ring: rgba(250, 250, 250, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Красивый и тонкий скроллбар */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }

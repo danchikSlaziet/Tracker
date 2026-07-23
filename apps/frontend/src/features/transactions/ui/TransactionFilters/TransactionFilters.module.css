@@ -1,49 +1,171 @@
-.filters {
+.filtersContainer {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 16px 20px;
+  padding: 16px;
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.select,
-.input {
-  padding: 8px 12px;
-  background: var(--input-bg);
+.searchRow {
+  width: 100%;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 14px;
   color: var(--text-primary);
   outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--text-primary);
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.select {
+  padding: 8px 36px 8px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
   cursor: pointer;
-  transition: border-color 0.2s;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.dateInput {
+  padding: 8px 12px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+  min-width: 0;
 }
 
 .select:focus,
-.input:focus {
-  border-color: var(--accent-primary);
+.dateInput:focus {
+  border-color: var(--text-primary);
 }
 
-.input[type="date"]::-webkit-calendar-picker-indicator {
+.dateGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dateSeparator {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ФИКС ИКОНКИ КАЛЕНДАРЯ ДЛЯ СВЕТЛОЙ И ТЕМНОЙ ТЕМЫ */
+[data-theme='dark'] .dateInput::-webkit-calendar-picker-indicator {
   filter: invert(1);
-  opacity: 0.5;
+  opacity: 0.7;
+}
+
+[data-theme='light'] .dateInput::-webkit-calendar-picker-indicator {
+  filter: none;
+  opacity: 0.6;
 }
 
 .resetBtn {
-  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
+  margin-left: auto;
 }
 
 .resetBtn:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--danger);
+}
+
+/* === АДАПТИВ ДЛЯ МОБИЛОК === */
+@media (max-width: 640px) {
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .select,
+  .dateGroup {
+    width: 100%;
+  }
+
+  .dateGroup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .dateSeparator {
+    display: none;
+  }
+
+  .dateInput {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .resetBtn {
+    margin-left: 0;
+    justify-content: center;
+    width: 100%;
+  }
 }

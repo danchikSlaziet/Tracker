@@ -62,7 +62,7 @@ app.get('/api/health', (req, res) => {
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,                   // максимум 100 запросов с одного IP за окно
+  max: 10000,                   // максимум 10000 запросов с одного IP за окно
   message: { error: 'Слишком много попыток, попробуйте позже' },
 })
 
