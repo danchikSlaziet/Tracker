@@ -1,21 +1,56 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.topBar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.createBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .content {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
 }
 
-@media (min-width: 768px) {
-  .content {
-    grid-template-columns: 350px 1fr;
-  }
-}
-
-.formWrapper {
-  position: sticky;
-  top: 2rem;
+.desktopFormWrapper {
+  display: none;
 }
 
 .listWrapper {
+  width: 100%;
   min-width: 0;
+}
+
+/* === ДЕСКТОП (от 768px) === */
+@media (min-width: 768px) {
+  .topBar {
+    display: none;
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .desktopFormWrapper {
+    display: block;
+    position: sticky;
+    top: 2rem;
+  }
 }

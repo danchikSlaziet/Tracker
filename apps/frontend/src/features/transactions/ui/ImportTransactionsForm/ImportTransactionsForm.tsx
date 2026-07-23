@@ -3,9 +3,9 @@ import { useImportTransactions } from '../../api/useTransactions'
 import styles from './ImportTransactionsForm.module.css'
 import { socket } from '@/shared/lib/socket'
 import { useImportProgress } from '../../model/useImportProgress'
-
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/shared/config'
+import { FileText, CheckCircle2, X } from 'lucide-react'
 
 const stageLabels: Record<string, string> = {
   reading_file: 'Читаем файл и категории...',
@@ -17,7 +17,12 @@ const stageLabels: Record<string, string> = {
   failed: 'Ошибка импорта',
 }
 
-export const ImportTransactionsForm = () => {
+interface ImportTransactionsFormProps {
+  onSuccess?: () => void
+  showTitle?: boolean
+}
+
+export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportTransactionsFormProps) => {
   const queryClient = useQueryClient()
   const { mutate: importFile, isPending, error, isSuccess, data, reset } = useImportTransactions()
   const [isDragActive, setIsDragActive] = useState(false)
@@ -29,7 +34,6 @@ export const ImportTransactionsForm = () => {
   const activeStages = ['reading_file', 'sending_to_gemini', 'analyzing', 'parsing_data', 'saving_database']
   const isImporting = isPending || (importProgress !== null && activeStages.includes(importProgress.stage))
 
-
   useEffect(() => {
     socket.on('connect', () => {
       console.log('Фронтенд успешно подключился к сокету! ID:', socket.id)
@@ -37,28 +41,24 @@ export const ImportTransactionsForm = () => {
 
     socket.on('import:progress', (data) => {
       setImportProgress(data)
-      // Если сокет сообщил, что импорт в базу успешно завершен — мгновенно обновляем списки
       if (data?.stage === 'completed') {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS })
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CATEGORIES })
+        if (onSuccess) onSuccess()
       }
     })
 
-    // при размонтировании формы стопаем соединение,
     return () => {
       socket.off('connect')
       socket.off('import:progress')
-      console.log('Фронтенд отключился от сокета.')
     }
   }, [])
-
-
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024
 
   const processFile = (file: File) => {
     setImportProgress(null)
-    setFileError(null) // сбрасываем предыдущую ошибку
+    setFileError(null)
 
     if (!file.type.includes('pdf') && !file.name.endsWith('.pdf')) {
       setFileError('Неверный формат файла. Поддерживаются только PDF-выписки.')
@@ -70,7 +70,6 @@ export const ImportTransactionsForm = () => {
     }
     importFile(file)
   }
-
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -94,9 +93,8 @@ export const ImportTransactionsForm = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) processFile(file)
-    e.target.value = '' // сброс, чтобы повторный выбор того же файла работал
+    e.target.value = ''
   }
-
 
   const triggerFileInput = () => {
     fileInputRef.current?.click()
@@ -109,10 +107,14 @@ export const ImportTransactionsForm = () => {
 
   return (
     <div className={styles.container}>
-      <h3>Импорт выписки банка (PDF)</h3>
-      <p className={styles.subtitle}>
-        Загрузите выписку любого банка — наш ИИ распознает транзакции и разложит по вашим категориям.
-      </p>
+      {showTitle && (
+        <>
+          <h3 className={styles.title}>Импорт выписки банка (PDF)</h3>
+          <p className={styles.subtitle}>
+            Загрузите выписку любого банка — наш ИИ распознает транзакции и разложит по категориям.
+          </p>
+        </>
+      )}
 
       <div
         className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''} ${isImporting ? styles.disabled : ''}`}
@@ -146,10 +148,11 @@ export const ImportTransactionsForm = () => {
               Не закрывайте страницу до окончания импорта
             </p>
           </div>
-
         ) : (isSuccess || importProgress?.stage === 'completed') ? (
           <div className={styles.successContainer}>
-            <div className={styles.successIcon}>🎉</div>
+            <div className={styles.successIcon}>
+              <CheckCircle2 size={36} color="var(--success)" />
+            </div>
             <p className={styles.statusText}>Импорт завершен!</p>
             <p className={styles.successNote}>
               Успешно добавлено <strong>
@@ -169,11 +172,13 @@ export const ImportTransactionsForm = () => {
           </div>
         ) : (
           <div className={styles.uploadPrompt}>
-            <div className={styles.uploadIcon}>📄</div>
+            <div className={styles.uploadIcon}>
+              <FileText size={32} />
+            </div>
             <p className={styles.primaryText}>
               Перетащите выписку сюда или <strong>нажмите для выбора</strong>
             </p>
-            <p className={styles.secondaryText}>Поддерживаются только PDF-файлы</p>
+            <p className={styles.secondaryText}>Поддерживаются только PDF-файлы до 10 МБ</p>
           </div>
         )}
       </div>
@@ -183,11 +188,16 @@ export const ImportTransactionsForm = () => {
           <span className={styles.errorText}>
             {fileError || getErrorMessage()}
           </span>
-          <button className={styles.errorClose} onClick={() => {
-            reset()
-            setFileError(null)
-            setImportProgress(null)
-          }}>✕</button>
+          <button
+            className={styles.errorClose}
+            onClick={() => {
+              reset()
+              setFileError(null)
+              setImportProgress(null)
+            }}
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
     </div>

@@ -1,26 +1,116 @@
-.content {
-  display: flex;
-  gap: 40px;
-  align-items: flex-start;
-}
-
-.formWrapper {
+.container {
   display: flex;
   flex-direction: column;
-  flex: 0 0 350px; 
-  gap: 20px;
+  gap: 16px;
+  width: 100%;
+}
+
+.actionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterToggleBtn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.activeFilterBtn {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+  font-weight: 600;
+}
+
+.importBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.importBtn:hover {
+  background: var(--bg-primary);
+  border-color: var(--text-secondary);
+}
+
+.filtersWrapper {
+  animation: slideDown 0.15s ease-out;
 }
 
 .listWrapper {
-  flex: 1;
+  width: 100%;
 }
 
-@media (max-width: 768px) {
-  .content {
-    flex-direction: column;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
-  .formWrapper {
-    flex: 1;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === АДАПТИВ ДЛЯ МОБИЛОК === */
+@media (max-width: 640px) {
+  .actionHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .filterToggleBtn {
     width: 100%;
+    justify-content: center;
+  }
+
+  .rightActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .importBtn,
+  .createBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 13px;
+    white-space: nowrap;
   }
 }

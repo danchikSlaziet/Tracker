@@ -72,7 +72,7 @@ describe('Компонент TransactionList.test', () => {
 
     renderWithProviders(<TransactionList />, { route: ROUTES.TRANSACTIONS })
 
-    const deleteBtn = screen.getByRole('button', { name: 'Удалить' })
+    const deleteBtn = screen.getByRole('button', { name: 'Удалить транзакцию' })
     expect(deleteBtn).toBeInTheDocument()
 
     await user.click(deleteBtn)

@@ -2,12 +2,13 @@ import { useState, useRef, useEffect } from 'react'
 import { useCategories, useCreateCategory } from '@/entities/category'
 import { useUpdateTransactions } from '../../api/useTransactions'
 import styles from './TransactionCategoryEditor.module.css'
-import type { Category } from '@/entities/category';
+import type { Category } from '@/entities/category'
+import { ChevronDown, Plus } from 'lucide-react'
 
 interface TransactionCategoryEditorProps {
-  transactionId: string;
-  currentCategory: Category;
-  transactionType: string;
+  transactionId: string
+  currentCategory: Category
+  transactionType: string
 }
 
 export const TransactionCategoryEditor = ({
@@ -23,8 +24,10 @@ export const TransactionCategoryEditor = ({
   const { mutate: updateTransaction, isPending: isUpdating } = useUpdateTransactions()
   const { mutateAsync: createCategory, isPending: isCreating } = useCreateCategory()
 
-  // Фильтруем категории по типу транзакции (доходы к доходам, расходы к расходам)
-  const filteredCategories = categories?.filter((c: Category) => c.type === transactionType) || []
+  // Фильтруем категории по типу транзакции (включая универсальные категории типа 'both')
+  const filteredCategories = categories?.filter(
+    (c: Category) => c.type === transactionType || c.type === 'both'
+  ) || []
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,9 +73,11 @@ export const TransactionCategoryEditor = ({
         className={styles.categoryBadge}
         style={{ backgroundColor: `${currentCategory.color}20`, color: currentCategory.color }}
         onClick={() => setIsOpen(!isOpen)}
+        title="Нажмите, чтобы изменить категорию"
       >
         <span>{currentCategory.icon}</span>
         <span>{currentCategory.name}</span>
+        <ChevronDown size={11} className={styles.arrowIcon} />
       </div>
 
       {isOpen && (
@@ -81,7 +86,7 @@ export const TransactionCategoryEditor = ({
             {filteredCategories.map((cat: Category) => (
               <button
                 key={cat.id}
-                className={styles.categoryItem}
+                className={`${styles.categoryItem} ${cat.id === currentCategory.id ? styles.activeItem : ''}`}
                 onClick={() => handleSelectCategory(cat.id)}
                 disabled={isUpdating}
               >
@@ -104,8 +109,9 @@ export const TransactionCategoryEditor = ({
               className={styles.createBtn}
               onClick={handleCreateCategory}
               disabled={!newCategoryName.trim() || isCreating || isUpdating}
+              title="Создать категорию"
             >
-              +
+              <Plus size={14} />
             </button>
           </div>
         </div>

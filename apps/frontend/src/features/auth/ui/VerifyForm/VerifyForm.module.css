@@ -1,144 +1,124 @@
 .container {
-  background: var(--card-bg, #ffffff);
-  padding: 2.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  box-shadow: var(--card-shadow);
   width: 100%;
   max-width: 400px;
   text-align: center;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.container h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary, #111827);
+.iconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--text-primary);
 }
 
-.container p {
-  color: var(--text-secondary, #6b7280);
-  font-size: 0.95rem;
-  margin-bottom: 2rem;
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.description {
+  color: var(--text-secondary);
+  font-size: 13px;
   line-height: 1.5;
+  margin: 0 0 24px 0;
 }
 
-:global([data-theme='dark']) .container p {
-  color: var(--text-secondary, #9ca3af);
+.emailBlock {
+  display: block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 13px;
+  word-break: break-all;
 }
 
 .form {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
 }
 
-.input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 1.5rem;
+.codeInput input {
   text-align: center;
-  letter-spacing: 0.5em; /* Раздвигаем цифры, чтобы выглядело как промокод */
-  border: 2px solid var(--border-color, #d1d5db);
-  border-radius: 0.5rem;
-  background-color: var(--input-bg, #ffffff);
-  color: var(--text-primary, #111827);
-  outline: none;
+  letter-spacing: 0.2em;
+  font-size: 16px;
   font-weight: 600;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-.error {
-  color: #ef4444;
-  font-size: 0.875rem;
-  font-weight: 500;
 }
 
 .submitBtn {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
-  background-color: #3b82f6;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 4px;
 }
 
-.submitBtn:hover:not(:disabled) {
-  background-color: #2563eb;
-}
-
-.submitBtn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.submitBtn:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.resendBlock {
-  margin-top: 2rem;
+.actions {
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 12px;
   align-items: center;
+  width: 100%;
 }
 
 .resendBtn {
   background: none;
   border: none;
-  color: #3b82f6;
-  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   padding: 0;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color 0.2s ease, color 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .resendBtn:hover:not(:disabled) {
-  text-decoration-color: currentColor;
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
 .resendBtn:disabled {
-  color: #9ca3af;
+  color: var(--text-secondary);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .success {
-  color: #10b981;
-  font-size: 0.875rem;
+  color: var(--success);
+  font-size: 13px;
   font-weight: 500;
-}
-
-.logoutBlock {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color, #e5e7eb);
 }
 
 .logoutBtn {
   background: none;
   border: none;
-  color: var(--text-secondary, #6b7280);
-  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s ease;
+  padding: 0;
+  transition: color 0.15s ease;
 }
 
 .logoutBtn:hover {
-  color: var(--text-primary, #111827);
+  color: var(--danger);
 }

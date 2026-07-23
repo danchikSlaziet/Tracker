@@ -1,26 +1,97 @@
 .root {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
-.sidebar {
-  width: 220px;
-  background: var(--bg-secondary);
-  border-right: 1px solid;
-  border-color: var(--border-color);
-  padding: 24px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+/* === МОБИЛЬНЫЕ И ПЛАНШЕТЫ (< 1024px) === */
+
+.mobileHeader {
   position: fixed;
-  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.burgerBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileAvatar {
+  cursor: pointer;
+  display: flex;
 }
 
 .logo {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
-  padding: 0 8px;
+}
+
+/* Затемнение экрана при открытии шторки */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+}
+
+/* Выезжающая мобильная шторка */
+.sidebar {
+  position: fixed;
+  top: 52px;
+  bottom: 0;
+  left: -280px;
+  width: 280px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  z-index: 99;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobileOpen {
+  transform: translateX(280px);
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.collapseBtn {
+  display: none;
 }
 
 .nav {
@@ -32,76 +103,203 @@
 .navLink {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 14px;
-  transition: all 0.15s ease;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .navLink:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
   color: var(--text-primary);
 }
 
 .active {
-  background: rgba(108, 99, 255, 0.15);
-  color: #6c63ff;
-}
-
-.main {
-  margin-left: 220px;
-  flex: 1;
-  padding: 32px;
-}
-
-.logoutBtn {
-  margin-top: auto;
-  padding: 10px;
-  background: transparent;
-  color: #ef4444;
-  border: 1px solid #ef4444;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.logoutBtn:hover {
-  background: #ef4444;
+  background: var(--bg-primary);
   color: var(--text-primary);
+  font-weight: 600;
 }
 
-.logoutBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.themeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
 }
 
 .profileBlock {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  margin-top: auto;
-  margin-bottom: 8px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
-}
-
-.profileBlock:hover {
-  background-color: var(--border-color);
-  transform: translateY(-1px);
+  transition: border-color 0.15s ease;
 }
 
 .profileEmail {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logoutBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.main {
+  flex: 1;
+  padding: 16px;
+  margin-top: 52px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 12px 10px;
+  }
+}
+
+/* === ДЕСКТОП (от 1024px) === */
+
+@media (min-width: 1024px) {
+  .root {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    flex-direction: row;
+  }
+
+  .mobileHeader,
+  .backdrop {
+    display: none;
+  }
+
+  .sidebar {
+    position: static;
+    transform: none !important;
+    width: 240px;
+    height: 100vh;
+    height: 100dvh;
+    padding: 24px 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-shrink: 0;
+    transition: width 0.2s ease;
+    z-index: 10;
+  }
+
+  .collapseBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .collapseBtn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+
+  /* Свернутое состояние сайдбара */
+  .sidebarCollapsed {
+    width: 64px;
+    padding: 24px 8px;
+    align-items: center;
+  }
+
+  .sidebarCollapsed .sidebarHeader {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .sidebarCollapsed .navLink {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0 auto;
+    justify-content: center;
+  }
+
+  .sidebarCollapsed .themeRow {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebarCollapsed .profileBlock {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0 auto;
+    justify-content: center;
+    width: auto;
+  }
+
+  .sidebarCollapsed .logoutBtn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0 auto;
+    justify-content: center;
+  }
+
+  .main {
+    flex: 1;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    margin-top: 0;
+    margin-left: 0;
+    padding: 32px 40px;
+  }
 }
