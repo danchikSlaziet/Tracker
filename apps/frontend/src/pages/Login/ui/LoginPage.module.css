@@ -1,14 +1,19 @@
 .page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 58px 16px 24px;
+  background-color: var(--bg-primary);
+  position: relative;
+  box-sizing: border-box;
 }
+
 .themeBtn {
   position: absolute;
-  top: 24px;
-  right: 24px;
-  width: 48px !important;
-  height: 48px;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
 }

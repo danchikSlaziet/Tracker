@@ -1,11 +1,36 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 24px;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .header h1 {
-  font-size: 2rem;
+  font-size: 28px;
   font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 12px 4px;
+    gap: 16px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
 }

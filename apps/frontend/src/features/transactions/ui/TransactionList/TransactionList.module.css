@@ -1,117 +1,149 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
-
-.emptyState {
+.emptyState,
+.loadingState,
+.errorState {
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: 14px;
   text-align: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 16px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  padding: 40px 20px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border-color);
 }
 
 .transactionCard {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
+  align-items: flex-start;
+  padding: 14px 16px;
   background-color: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  gap: 12px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .transactionCard:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: var(--border-color);
-}
-
-.leftInfo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  border-color: var(--text-secondary);
 }
 
 .iconBox {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  font-size: 24px;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius);
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.details {
+.contentBody {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
-.categoryName {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 16px;
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 .description {
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
   font-size: 14px;
-  margin-top: 4px;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.description:hover {
+  opacity: 0.8;
+}
+
+.expandedDescription {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+.amountBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.amount {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.amount.income {
+  color: var(--success);
+}
+
+.amount.expense {
+  color: var(--danger);
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
 .date {
   color: var(--text-secondary);
   font-size: 12px;
-  margin-top: 4px;
-}
-
-.rightInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.amount {
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-}
-
-.amount.income {
-  color: #34d399;
-}
-
-.amount.expense {
-  color: #f87171;
+  white-space: nowrap;
+  font-weight: 500;
 }
 
 .deleteBtn {
-  background: none;
+  background: transparent;
   border: none;
-  color: #ef4444;
-  font-size: 13px;
-  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
-  opacity: 0;
-  transform: translateX(10px);
-  transition: all 0.2s ease;
-}
-
-.transactionCard:hover .deleteBtn {
-  opacity: 1;
-  transform: translateX(0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .deleteBtn:hover {
-  color: #f87171;
-  text-decoration: underline;
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .trigger {
@@ -124,18 +156,15 @@
 
 .loader {
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   animation: pulse 1.5s infinite ease-in-out;
 }
 
 @keyframes pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 0.6;
   }
-
   50% {
     opacity: 1;
   }

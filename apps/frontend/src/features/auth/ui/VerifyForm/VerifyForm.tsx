@@ -1,3 +1,5 @@
+import { Mail } from 'lucide-react'
+import { Button, Input } from '@finance/ui-kit'
 import { useVerifyForm } from './useVerifyForm'
 import styles from './VerifyForm.module.css'
 
@@ -16,29 +18,42 @@ export const VerifyForm = () => {
     isLoggingOut
   } = useVerifyForm()
 
+  const codeError = errors.code?.message || (verifyMutation.isError ? 'Неверный код или он устарел' : undefined)
+
   return (
     <div className={styles.container}>
-      <h2>Подтверждение почты</h2>
-      <p>Мы отправили 6-значный код на <strong>{email}</strong></p>
+      <div className={styles.iconWrapper}>
+        <Mail size={24} />
+      </div>
+      <h2 className={styles.title}>Подтверждение почты</h2>
+      <p className={styles.description}>
+        Мы отправили 6-значный код на
+        <strong className={styles.emailBlock}>{email}</strong>
+      </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-        <input
-          data-test-id='code-input'
+        <Input
+          data-test-id="code-input"
           type="text"
-          placeholder="Введи код (6 цифр)"
+          placeholder="123456"
           maxLength={6}
+          autoComplete="one-time-code"
+          error={codeError}
           {...register('code')}
-          className={styles.input}
+          className={styles.codeInput}
         />
-        {errors.code && <span className={styles.error}>{errors.code.message}</span>}
-        {verifyMutation.isError && <span className={styles.error}>Неверный код или он устарел</span>}
 
-        <button data-test-id='send-code-btn' type="submit" disabled={verifyMutation.isPending} className={styles.submitBtn}>
-          {verifyMutation.isPending ? 'Проверяем...' : 'Подтвердить'}
-        </button>
+        <Button
+          data-test-id="send-code-btn"
+          type="submit"
+          isLoading={verifyMutation.isPending}
+          className={styles.submitBtn}
+        >
+          Подтвердить
+        </Button>
       </form>
 
-      <div className={styles.resendBlock}>
+      <div className={styles.actions}>
         <button
           type="button"
           onClick={handleResend}
@@ -48,8 +63,7 @@ export const VerifyForm = () => {
           Отправить код ещё раз
         </button>
         {resendStatus && <span className={styles.success}>{resendStatus}</span>}
-      </div>
-      <div className={styles.logoutBlock}>
+
         <button
           type="button"
           onClick={handleLogout}

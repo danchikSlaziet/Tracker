@@ -3,6 +3,7 @@ import type { UserDto } from '@finance/shared-types'
 import styles from './ProfileModal.module.css'
 import { useDeleteAvatar, useUploadAvatar } from '../api/useAvatar'
 import { Avatar } from '@finance/ui-kit'
+import { X, Camera, Trash2 } from 'lucide-react'
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -59,10 +60,10 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
-          &times;
+          <X size={18} />
         </button>
 
-        <h2 className={styles.title}>Профиль пользователя</h2>
+        <h2 className={styles.title}>Профиль</h2>
 
         <div className={styles.avatarSection}>
           <div
@@ -71,10 +72,10 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
             title="Нажмите, чтобы изменить аватар"
           >
             <Avatar src={user.avatarUrl} email={user.email} size="lg" />
-            <div className={styles.avatarHover}>
-              <span>Сменить</span>
+            <div className={styles.cameraBadge}>
+              <Camera size={13} />
             </div>
-            {isUploading && <div className={styles.loaderSpinner}>Загрузка...</div>}
+            {isUploading && <div className={styles.loaderSpinner}>...</div>}
           </div>
 
           <input
@@ -91,13 +92,14 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
               onClick={handleDeleteClick}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Удаление...' : 'Удалить аватар'}
+              <Trash2 size={13} />
+              <span>{isDeleting ? 'Удаление...' : 'Удалить аватар'}</span>
             </button>
           )}
         </div>
 
         <div className={styles.infoSection}>
-          <div className={styles.infoRow}>
+          <div className={styles.infoGroup}>
             <span className={styles.infoLabel}>Email</span>
             <span className={styles.infoValue}>{user.email}</span>
           </div>

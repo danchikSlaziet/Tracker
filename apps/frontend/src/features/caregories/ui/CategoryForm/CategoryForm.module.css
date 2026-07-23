@@ -1,67 +1,173 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 20px 0;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.01em;
 }
 
 .group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
-.group label {
-  font-size: 13px;
-  font-weight: 500;
+.group label,
+.iconGroup label,
+.nameGroup label {
+  font-size: 11px;
+  font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+}
+
+.typeSegmentedControl {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 3px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  gap: 4px;
+}
+
+.typeSegmentBtn {
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.typeSegmentBtn:hover {
+  color: var(--text-primary);
+}
+
+.activeSegment {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--card-shadow);
+}
+
+.rowGroup {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.iconGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 68px;
+}
+
+.nameGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
 }
 
 .input,
-.select {
-  padding: 10px 14px;
-  background: var(--input-bg);
+.iconInput {
+  padding: 8px 10px;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: var(--radius);
+  font-size: 13px;
   color: var(--text-primary);
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.iconInput {
+  text-align: center;
+  font-size: 16px;
 }
 
 .input:focus,
-.select:focus {
-  border-color: var(--accent-primary);
+.iconInput:focus {
+  border-color: var(--text-primary);
 }
 
-.colorRow {
+.colorPalette {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.colorPicker {
-  width: 48px;
-  height: 40px;
-  padding: 2px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+.colorSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
   cursor: pointer;
-  background: transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.colorHex {
-  font-size: 14px;
+.colorSwatch:hover {
+  transform: scale(1.15);
+}
+
+.selectedSwatch {
+  border-color: var(--text-primary);
+  transform: scale(1.15);
+}
+
+/* === КНОПКА ВЫБОРА СВОЕГО ЦВЕТА === */
+.customColorBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px dashed var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   color: var(--text-secondary);
-  font-family: monospace;
+  background: var(--bg-primary);
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.customColorBtn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.selectedCustomColor {
+  border: 2px solid var(--text-primary);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.colorPickerHidden {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  top: 0;
+  left: 0;
 }
 
 .actions {
@@ -72,15 +178,15 @@
 
 .submitBtn {
   flex: 1;
-  padding: 12px;
+  padding: 9px 14px;
   background: var(--accent-primary);
-  color: var(--text-primary);
+  color: var(--accent-text);
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: var(--radius);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.15s ease;
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -88,28 +194,28 @@
 }
 
 .submitBtn:disabled {
-  background: rgba(255,255,255,0.1);
-  color: var(--text-secondary);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .cancelBtn {
-  padding: 12px 16px;
+  padding: 9px 14px;
   background: transparent;
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .cancelBtn:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+  color: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 .error {
-  color: #ef4444;
-  font-size: 13px;
+  color: var(--danger);
+  font-size: 11px;
 }

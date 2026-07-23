@@ -6,7 +6,7 @@ import { CategoryForm } from './CategoryForm'
 describe('Компонент CategoryForm', () => {
 
   it('рендерит форму создания по умолчанию', () => {
-    render(<CategoryForm onSubmit={vi.fn()} />)
+    render(<CategoryForm showTitle={true} onSubmit={vi.fn()} />)
 
     expect(screen.getByRole('heading', { name: 'Новая категория' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Создать' })).toBeInTheDocument()
@@ -20,15 +20,12 @@ describe('Компонент CategoryForm', () => {
       type: 'expense' as const
     }
 
-    render(<CategoryForm initialData={initialData} onSubmit={vi.fn()} />)
-
+    render(<CategoryForm showTitle={true} initialData={initialData} onSubmit={vi.fn()} />)
 
     expect(screen.getByRole('heading', { name: 'Редактировать категорию' })).toBeInTheDocument()
-
     expect(screen.getByLabelText('Название')).toHaveValue('Продукты')
-    expect(screen.getByLabelText('Иконка (эмодзи)')).toHaveValue('🍎')
-    expect(screen.getByLabelText('Тип')).toHaveValue('expense')
-
+    expect(screen.getByLabelText('Иконка')).toHaveValue('🍎')
+    expect(screen.getByRole('button', { name: 'Расход' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Сохранить' })).toBeInTheDocument()
   })
 
@@ -52,10 +49,9 @@ describe('Компонент CategoryForm', () => {
     render(<CategoryForm onSubmit={handleSubmit} />)
 
     const submitBtn = screen.getByRole('button', { name: 'Создать' });
-    const iconInput = screen.getByLabelText('Иконка (эмодзи)')
+    const iconInput = screen.getByLabelText('Иконка')
     await user.clear(iconInput)
     await user.click(submitBtn)
-
 
     expect(await screen.findByText('Иконка обязательна')).toBeInTheDocument()
     expect(handleSubmit).not.toHaveBeenCalled()
@@ -72,9 +68,9 @@ describe('Компонент CategoryForm', () => {
 
     await user.type(nameInput, 'Зарплата')
 
-    // Выбираем тип "Доход" из селекта
-    const typeSelect = screen.getByLabelText('Тип')
-    await user.selectOptions(typeSelect, 'income')
+    // Выбираем тип "Доход" 
+    const incomeBtn = screen.getByRole('button', { name: 'Доход' })
+    await user.click(incomeBtn)
 
     await user.click(submitBtn)
 

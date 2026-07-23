@@ -4,20 +4,18 @@ import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/shared/lib/test-utils'
 import { ROUTES } from '@/shared/config'
 
-
 import { getTransactions, createTransaction, deleteTransaction } from '@/features/transactions'
 import { getCategories } from '@/entities/category'
 import { TransactionWidget } from './TransactionsWidget'
 
-
-vi.mock('@/features/transactions/api/transactionsApi', () => ({
+vi.mock('@/features/transactions', () => ({
   getTransactions: vi.fn(),
   createTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
   importTransactions: vi.fn(),
 }))
 
-vi.mock('@/entities/category/api/categoriesApi', () => ({
+vi.mock('@/entities/category', () => ({
   getCategories: vi.fn(),
   createCategory: vi.fn()
 }))
@@ -67,10 +65,13 @@ describe('Интеграционный тест: TransactionWidget', () => {
       meta: { currentPage: 1, totalPages: 1, totalCount: 1, limit: 20 }
     } as any)
 
-
     vi.mocked(createTransaction).mockResolvedValue(newTransaction as any)
 
     renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS })
+
+    // Открываем модальное окно создания транзакции
+    const openModalBtn = await screen.findByRole('button', { name: 'Транзакция' })
+    await user.click(openModalBtn)
 
     const amountInput = await screen.findByLabelText('Сумма')
     const categorySelect = screen.getByLabelText('Категория')
@@ -83,13 +84,10 @@ describe('Интеграционный тест: TransactionWidget', () => {
 
     await user.click(submitBtn)
 
-    expect(descriptionInput).toHaveValue('')
-
     expect(await screen.findByText('Обед в кафе')).toBeInTheDocument()
   })
 
   it('удаляет транзакцию и убирает ее из списка', async () => {
-
     const user = userEvent.setup()
 
     const mockCategory = { id: 'cat-1', name: 'Еда', icon: '🍔', type: 'expense', color: '#000' }
@@ -114,11 +112,11 @@ describe('Интеграционный тест: TransactionWidget', () => {
       meta: { currentPage: 1, totalPages: 1, totalCount: 0, limit: 20 }
     } as any)
 
-    vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" })
+    vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" } as any)
 
     renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS }) // рендер только после мока апишки
 
-    const deleteBtn = await screen.findByText('Удалить') // getByText не подтянет - т.к. асинхронщина, а транзакции еще не подгрузились
+    const deleteBtn = await screen.findByRole('button', { name: 'Удалить транзакцию' }) // getByText не подтянет - т.к. асинхронщина, а транзакции еще не подгрузились
 
     await user.click(deleteBtn)
 

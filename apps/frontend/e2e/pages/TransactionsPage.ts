@@ -17,30 +17,41 @@ export class TransactionsPage {
 
   readonly searchInput: Locator;
   readonly typeFilterSelect: Locator;
+  readonly openCreateModalBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
+    this.openCreateModalBtn = page.getByTestId('open-create-transaction-modal-btn');
     this.amountInput = page.getByTestId('amount-input');
     this.categorySelect = page.getByTestId('category-select');
     this.descriptionInput = page.getByTestId('description-input');
     this.saveButton = page.getByTestId('transaction-submit-btn');
 
     this.searchInput = page.getByTestId('search-input');
-    this.typeFilterSelect = page.getByTestId('select-type-filter')
+    this.typeFilterSelect = page.getByTestId('select-type-filter');
   }
 
   async navigate() {
     await this.page.goto('/transactions');
+    await this.page.getByRole('heading', { name: 'Мои транзакции' }).waitFor({ state: 'visible' });
+  }
+
+  async openCreateModal() {
+    const expenseRadio = this.page.getByTestId('type-expense-radio');
+    if (!await expenseRadio.isVisible()) {
+      await this.openCreateModalBtn.click();
+    }
   }
 
   // переключение "Доход" / "Расход"
   async selectType(type: 'income' | 'expense') {
     const testId = type === 'income' ? 'type-income-radio' : 'type-expense-radio';
-    await this.page.getByTestId(testId).check();
+    await this.page.getByTestId(testId).click();
   }
 
   async fillForm(data: TransactionFormValues) {
+    await this.openCreateModal();
     await this.selectType(data.type);
     await this.amountInput.fill(data.amount);
 
@@ -55,6 +66,9 @@ export class TransactionsPage {
 
   async submit() {
     await this.saveButton.click();
+    // Дожидаемся успешного сохранения на бэкенд и закрытия модалки
+    const modalTitle = this.page.getByRole('heading', { name: 'Новая транзакция' });
+    await modalTitle.waitFor({ state: 'hidden' }).catch(() => {});
   }
 
   getTransactionCard(description: string): Locator {
@@ -68,12 +82,19 @@ export class TransactionsPage {
     await card.getByTestId('delete-transaction-btn').click();
   }
 
+  async ensureFiltersOpen() {
+    if (!await this.searchInput.isVisible()) {
+      await this.page.getByRole('button', { name: 'Фильтры' }).click();
+    }
+  }
+
   async search(text: string) {
+    await this.ensureFiltersOpen();
     await this.searchInput.fill(text);
   }
 
   async filterByType(typeLabel: 'Все типы' | 'Доходы' | 'Расходы') {
+    await this.ensureFiltersOpen();
     await this.typeFilterSelect.selectOption({ label: typeLabel });
   }
-
 }
