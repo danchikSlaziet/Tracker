@@ -8,14 +8,14 @@ import { getTransactions, createTransaction, deleteTransaction } from '@/feature
 import { getCategories } from '@/entities/category'
 import { TransactionWidget } from './TransactionsWidget'
 
-vi.mock('@/features/transactions', () => ({
+vi.mock('@/features/transactions/api/transactionsApi', () => ({
   getTransactions: vi.fn(),
   createTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
   importTransactions: vi.fn(),
 }))
 
-vi.mock('@/entities/category', () => ({
+vi.mock('@/entities/category/api/categoriesApi', () => ({
   getCategories: vi.fn(),
   createCategory: vi.fn()
 }))
@@ -114,9 +114,9 @@ describe('Интеграционный тест: TransactionWidget', () => {
 
     vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" } as any)
 
-    renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS }) // рендер только после мока апишки
+    renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS })
 
-    const deleteBtn = await screen.findByRole('button', { name: 'Удалить транзакцию' }) // getByText не подтянет - т.к. асинхронщина, а транзакции еще не подгрузились
+    const deleteBtn = await screen.findByRole('button', { name: 'Удалить транзакцию' })
 
     await user.click(deleteBtn)
 
