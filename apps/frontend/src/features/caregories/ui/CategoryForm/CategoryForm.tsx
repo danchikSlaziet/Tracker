@@ -12,7 +12,7 @@ interface CategoryFormProps {
 }
 
 const PRESET_COLORS = [
-  '#ef4444', '#f97316', '#f59e0b', '#10b981', 
+  '#ef4444', '#f97316', '#f59e0b', '#10b981',
   '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899', '#64748b'
 ]
 
@@ -69,13 +69,13 @@ export const CategoryForm = ({
       <div className={styles.rowGroup}>
         <div className={styles.iconGroup}>
           <label htmlFor='icon'>Иконка</label>
-          <input id='icon' className={styles.iconInput} {...register('icon')} placeholder="📁" maxLength={4} />
+          <input id='icon' data-test-id="category-icon-input" className={styles.iconInput} {...register('icon')} placeholder="📁" maxLength={4} />
           {errors.icon && <span className={styles.error}>{errors.icon.message}</span>}
         </div>
 
         <div className={styles.nameGroup}>
           <label htmlFor='name'>Название</label>
-          <input id='name' className={styles.input} {...register('name')} placeholder="Например: Кафе" />
+          <input id='name' data-test-id="category-name-input" className={styles.input} {...register('name')} placeholder="Например: Кафе" />
           {errors.name && <span className={styles.error}>{errors.name.message}</span>}
         </div>
       </div>
@@ -117,7 +117,7 @@ export const CategoryForm = ({
             Отмена
           </button>
         )}
-        <button type="submit" className={styles.submitBtn} disabled={isLoading}>
+        <button type="submit" data-test-id="category-submit-btn" className={styles.submitBtn} disabled={isLoading}>
           {initialData ? 'Сохранить' : 'Создать'}
         </button>
       </div>
