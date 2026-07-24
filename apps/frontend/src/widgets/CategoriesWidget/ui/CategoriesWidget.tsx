@@ -52,7 +52,7 @@ export const CategoriesWidget = () => {
   return (
     <div className={styles.container}>
       <div className={styles.topBar}>
-        <Button onClick={handleOpenCreate} className={styles.createBtn}>
+        <Button data-test-id="open-create-category-btn"  onClick={handleOpenCreate} className={styles.createBtn}>
           <Plus size={16} />
           <span>Новая категория</span>
         </Button>

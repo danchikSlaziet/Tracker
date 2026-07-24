@@ -4,7 +4,7 @@ import styles from './DashboardWidget.module.css'
 import { formatMoney } from "@/shared/lib/formatMoney"
 import { formatDate } from "@/shared/lib/formatDate"
 import { Wallet, TrendingUp, TrendingDown, ArrowRight } from "lucide-react"
-import { Link } from "react-router"
+import { Link } from "react-router-dom"
 import { Skeleton } from "@/shared/ui/Skeleton"
 
 export const DashboardWidget = () => {
