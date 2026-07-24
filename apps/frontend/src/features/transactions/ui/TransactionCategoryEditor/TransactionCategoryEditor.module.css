@@ -29,16 +29,17 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  width: 200px;
+  width: fit-content;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   box-shadow: var(--card-shadow);
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: fadeIn 0.15s ease-out;
+  box-sizing: border-box;
 }
 
 .list {
@@ -64,6 +65,7 @@
   font-size: 13px;
   color: var(--text-primary);
   transition: background-color 0.15s ease;
+  box-sizing: border-box;
 }
 
 .categoryItem:hover {
@@ -77,14 +79,20 @@
 
 .createSection {
   display: flex;
+  align-items: center;
   padding: 8px;
   border-top: 1px solid var(--border-color);
   gap: 6px;
   background: var(--bg-primary);
+  box-sizing: border-box;
 }
 
 .createInput {
   flex: 1;
+  min-width: 0; /* Обязательно для Flexbox на iOS WebKit */
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
   padding: 6px 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
@@ -99,11 +107,15 @@
 }
 
 .createBtn {
+  flex-shrink: 0; /* Предотвращает выталкивание кнопки на iOS WebKit */
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
   background: var(--accent-primary);
   color: var(--accent-text);
   border: none;
   border-radius: var(--radius);
-  padding: 0 8px;
+  padding: 0;
   cursor: pointer;
   display: flex;
   align-items: center;

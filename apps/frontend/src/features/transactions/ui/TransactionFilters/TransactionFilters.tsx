@@ -64,21 +64,27 @@ export const TransactionFiltersPanel = ({ filters, onChange }: TransactionFilter
         </select>
 
         <div className={styles.dateGroup}>
-          <input
-            className={styles.dateInput}
-            type="date"
-            title="Дата с"
-            value={filters.dateFrom ?? ''}
-            onChange={(e) => handleChange('dateFrom', e.target.value)}
-          />
-          <span className={styles.dateSeparator}>—</span>
-          <input
-            className={styles.dateInput}
-            type="date"
-            title="Дата по"
-            value={filters.dateTo ?? ''}
-            onChange={(e) => handleChange('dateTo', e.target.value)}
-          />
+          <div className={styles.dateField}>
+            <span className={styles.dateLabel}>С:</span>
+            <input
+              className={styles.dateInput}
+              type="date"
+              title="Дата с"
+              value={filters.dateFrom ?? ''}
+              onChange={(e) => handleChange('dateFrom', e.target.value)}
+            />
+          </div>
+
+          <div className={styles.dateField}>
+            <span className={styles.dateLabel}>По:</span>
+            <input
+              className={styles.dateInput}
+              type="date"
+              title="Дата по"
+              value={filters.dateTo ?? ''}
+              onChange={(e) => handleChange('dateTo', e.target.value)}
+            />
+          </div>
         </div>
 
         {hasActiveFilters && (
