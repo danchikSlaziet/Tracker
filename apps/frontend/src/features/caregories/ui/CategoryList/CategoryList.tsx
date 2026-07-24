@@ -46,7 +46,7 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
           const isExpanded = expandedCatId === cat.id
 
           return (
-            <div key={cat.id} className={styles.card}>
+            <div key={cat.id} data-test-id="category-item" className={styles.card}>
               <div className={styles.left}>
                 <div className={styles.icon} style={{ backgroundColor: `${cat.color}20` }}>
                   {cat.icon}
@@ -79,6 +79,7 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
                   <button
                     className={styles.deleteBtn}
                     onClick={() => deleteCategory(cat.id)}
+                    data-test-id="delete-category-btn"
                     title="Удалить категорию"
                     aria-label="Удалить категорию"
                   >
