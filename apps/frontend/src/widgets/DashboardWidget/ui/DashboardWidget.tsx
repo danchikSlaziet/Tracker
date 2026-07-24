@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { useTransactions, ExpensesPieChart } from "@/features/transactions"
+import { useTransactions, ExpensesPieChart, TransactionListSkeleton } from "@/features/transactions"
 import styles from './DashboardWidget.module.css'
 import { formatMoney } from "@/shared/lib/formatMoney"
 import { formatDate } from "@/shared/lib/formatDate"
 import { Wallet, TrendingUp, TrendingDown, ArrowRight } from "lucide-react"
 import { Link } from "react-router"
+import { Skeleton } from "@/shared/ui/Skeleton"
 
 export const DashboardWidget = () => {
   const [expandedTxId, setExpandedTxId] = useState<string | null>(null)
@@ -33,7 +34,7 @@ export const DashboardWidget = () => {
             </div>
           </div>
           <span className={styles.cardValue}>
-            {isLoading ? '...' : formatMoney(balance)}
+            {isLoading ? <Skeleton width={100} height={24} borderRadius={6} /> : formatMoney(balance)}
           </span>
         </div>
 
@@ -45,7 +46,7 @@ export const DashboardWidget = () => {
             </div>
           </div>
           <span className={`${styles.cardValue} ${styles.incomeValue}`}>
-            {isLoading ? '...' : formatMoney(income)}
+            {isLoading ? <Skeleton width={100} height={24} borderRadius={6} /> : formatMoney(income)}
           </span>
         </div>
 
@@ -57,7 +58,7 @@ export const DashboardWidget = () => {
             </div>
           </div>
           <span className={`${styles.cardValue} ${styles.expenseValue}`}>
-            {isLoading ? '...' : formatMoney(expense)}
+            {isLoading ? <Skeleton width={100} height={24} borderRadius={6} /> : formatMoney(expense)}
           </span>
         </div>
       </div>
@@ -78,7 +79,7 @@ export const DashboardWidget = () => {
         </div>
 
         <div className={styles.list}>
-          {isLoading && <div className={styles.loadingState}>Загрузка транзакций...</div>}
+          {isLoading && <TransactionListSkeleton count={3} />}
           {!isLoading && recentTransactions.length === 0 && (
             <div className={styles.empty}>У вас пока нет транзакций</div>
           )}
