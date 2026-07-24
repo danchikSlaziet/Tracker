@@ -73,8 +73,29 @@
   background-position: right 14px center;
 }
 
+.dateGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dateField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dateLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  user-select: none;
+}
+
 .dateInput {
-  padding: 8px 12px;
+  padding: 8px 10px;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
@@ -85,23 +106,20 @@
   box-sizing: border-box;
   transition: border-color 0.15s ease;
   min-width: 0;
+  min-height: 38px; /* Предотвращает схлопывание высоты на iOS Safari */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Исправление отображения значения даты на iOS WebKit */
+.dateInput::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.2em;
 }
 
 .select:focus,
 .dateInput:focus {
   border-color: var(--text-primary);
-}
-
-.dateGroup {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.dateSeparator {
-  color: var(--text-secondary);
-  font-size: 13px;
 }
 
 /* ФИКС ИКОНКИ КАЛЕНДАРЯ ДЛЯ СВЕТЛОЙ И ТЕМНОЙ ТЕМЫ */
@@ -154,11 +172,12 @@
     gap: 8px;
   }
 
-  .dateSeparator {
-    display: none;
+  .dateField {
+    width: 100%;
   }
 
   .dateInput {
+    flex: 1;
     width: 100%;
     box-sizing: border-box;
   }
