@@ -7,6 +7,7 @@ import type { TransactionFilters } from '../../model/transactionsSchema'
 import { TransactionCategoryEditor } from '../TransactionCategoryEditor/TransactionCategoryEditor'
 import { useIntersectionObserver } from '@/shared/lib/useIntersectionObserver'
 import { Trash2 } from 'lucide-react'
+import { TransactionListSkeleton } from './TransactionListSkeleton'
 
 interface TransactionListProps {
   filters?: TransactionFilters
@@ -37,7 +38,7 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
     setExpandedTxId(expandedTxId === id ? null : id)
   }
 
-  if (isLoading) return <div className={styles.loadingState}>Загрузка транзакций...</div>
+  if (isLoading) return <TransactionListSkeleton />
   if (error) return <div className={styles.errorState}>Ошибка при загрузке транзакций.</div>
 
   if (transactions.length === 0) {
