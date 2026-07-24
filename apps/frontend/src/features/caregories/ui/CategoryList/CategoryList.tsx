@@ -3,6 +3,7 @@ import type { Category } from '@/entities/category'
 import styles from './CategoryList.module.css'
 import { useState } from 'react'
 import { Pencil, Trash2, RotateCcw } from 'lucide-react'
+import { CategoryListSkeleton } from './CategoryListSkeleton'
 
 interface CategoryListProps {
   onEdit: (category: Category) => void
@@ -22,7 +23,8 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
     setExpandedCatId(expandedCatId === id ? null : id)
   }
 
-  if (isLoading) return <div className={styles.loadingState}>Загрузка категорий...</div>
+  if (isLoading) return <CategoryListSkeleton />
+
 
   return (
     <div className={styles.list}>
