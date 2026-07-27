@@ -44,13 +44,13 @@ Full-stack монорепозиторий для учёта личных фин�
 Соблюдение архитектурных правил FSD и отсутствия циклических импортов проверяется автоматическим линтером **Steiger**.
 
 ### Архитектурные решения (ADR)
-Ключевые инженерные и технические решения задокументированы в формате [Architecture Decision Records](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/):
-- [ADR 0001: Запись архитектурных решений](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/0001-record-architecture-decisions.md)
-- [ADR 0002: Архитектурный подход FSD](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/0002-feature-sliced-design.md)
-- [ADR 0003: Хранение JWT в httpOnly cookies](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/0003-jwt-in-httponly-cookies.md)
-- [ADR 0004: Монорепозиторий и общие типы](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/0004-monorepo-structure-npm-workspaces.md)
-- [ADR 0005: ИИ-парсинг PDF и WebSockets](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/0005-ai-pdf-parsing-gemini-and-websockets.md)
-- [ADR 0006: Стратегия тестирования](file:///Users/danistazhitdinov/Documents/forCV/Finance/docs/adr/0006-testing-strategy-vitest-and-playwright.md)
+Ключевые технические решения задокументированы в формате [Architecture Decision Records](docs/adr/):
+- [ADR 0001: Запись архитектурных решений](docs/adr/0001-record-architecture-decisions.md)
+- [ADR 0002: Архитектурный подход FSD](docs/adr/0002-feature-sliced-design.md)
+- [ADR 0003: Хранение JWT в httpOnly cookies](docs/adr/0003-jwt-in-httponly-cookies.md)
+- [ADR 0004: Монорепозиторий и общие типы](docs/adr/0004-monorepo-structure-npm-workspaces.md)
+- [ADR 0005: ИИ-парсинг PDF и WebSockets](docs/adr/0005-ai-pdf-parsing-gemini-and-websockets.md)
+- [ADR 0006: Стратегия тестирования](docs/adr/0006-testing-strategy-vitest-and-playwright.md)
 
 ---
 
