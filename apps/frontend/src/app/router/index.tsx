@@ -24,6 +24,9 @@ const CategoriesPage = lazy(() =>
 const TransactionsPage = lazy(() =>
   import('@/pages/Transactions').then(m => ({ default: m.TransactionsPage }))
 )
+const NotFoundPage = lazy(() =>
+  import('@/pages/NotFound').then(m => ({ default: m.NotFoundPage }))
+)
 
 function ThemeProvider() {
   const { theme } = useThemeStore()
@@ -51,6 +54,7 @@ export function AppRouter() {
             <Route path={ROUTES.CATEGORIES} element={<CategoriesPage />} />
           </Route>
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   )
