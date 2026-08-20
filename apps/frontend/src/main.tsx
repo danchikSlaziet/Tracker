@@ -21,6 +21,11 @@ if (dsn) {
     replaysOnErrorSampleRate: 1.0, // 100% сессий с ошибками 
   })
 }
+// Автоматическая перезагрузка страницы при выкате новой версии (если старый lazy-чанк вернул 404)
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault()
+  window.location.reload()
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
