@@ -1,12 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/config'
 import styles from './NotFoundPage.module.css'
+import { PageMeta } from '@/shared/ui/PageMeta'
 
 export function NotFoundPage() {
   const navigate = useNavigate()
 
   return (
     <main className={styles.container}>
+      <PageMeta title="Страница не найдена" description="Запрошенная страница не существует или была удалена" />
       <div className={styles.wrapper}>
         <span className={styles.code}>404</span>
         <h1 className={styles.title}>Страница не найдена</h1>
