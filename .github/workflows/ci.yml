@@ -76,6 +76,8 @@ jobs:
       PORT: 3000
       VITE_API_URL: "http://localhost:3000/api"
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      GROQ_API_KEY: "test-groq-key-for-ci"
+      GROQ_API_BASE_URL: "https://someurl.com"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
