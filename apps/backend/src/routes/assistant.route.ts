@@ -11,7 +11,20 @@ const groq = new Groq({
 })
 const MODEL = 'qwen/qwen3.8-27b'
 
-// тулзы для AI
+// Хелперы для безопасного парсинга входных данных от LLM
+function parseSafeDate(dateStr?: string): Date | undefined {
+  if (!dateStr) return undefined
+  const parsed = new Date(dateStr)
+  return isNaN(parsed.getTime()) ? undefined : parsed
+}
+
+function parseSafeLimit(limit?: number | string): number {
+  const num = Number(limit)
+  if (isNaN(num) || num <= 0) return 10
+  return Math.min(Math.floor(num), 50) // ограничиваем максимум 50 записями
+}
+
+// Описание тулзов
 const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
@@ -38,7 +51,11 @@ const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
         properties: {
           dateFrom: { type: 'string', description: 'Начало периода YYYY-MM-DD' },
           dateTo: { type: 'string', description: 'Конец периода YYYY-MM-DD' },
-          type: { type: 'string', enum: ['income', 'expense'], description: 'Тип транзакций' },
+          type: {
+            type: 'string',
+            enum: ['income', 'expense', 'incomes', 'expenses'],
+            description: 'Тип транзакций: expense (расходы) или income (доходы)',
+          },
         },
         required: ['type'],
       },
@@ -67,8 +84,12 @@ const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
         type: 'object',
         properties: {
           limit: { type: 'number', description: 'Количество транзакций (по умолчанию 10)' },
-          type: { type: 'string', enum: ['income', 'expense'] },
-          categoryId: { type: 'string', description: 'Фильтр по категории (UUID)' },
+          type: {
+            type: 'string',
+            enum: ['income', 'expense', 'incomes', 'expenses'],
+            description: 'Фильтр по типу: expense или income',
+          },
+          categoryId: { type: 'string', description: 'Фильтр по категории (ID или название)' },
         },
         required: [],
       },
@@ -76,16 +97,19 @@ const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
   },
 ]
 
-
-// исполнители тулзов 
+// Исполнители тулзов
 async function execGetSummary(userId: string, args: { dateFrom?: string; dateTo?: string }) {
   const where: any = { userId }
-  if (args.dateFrom || args.dateTo) {
+  const from = parseSafeDate(args.dateFrom)
+  const to = parseSafeDate(args.dateTo)
+
+  if (from || to) {
     where.date = {
-      ...(args.dateFrom ? { gte: new Date(args.dateFrom) } : {}),
-      ...(args.dateTo ? { lte: new Date(args.dateTo) } : {}),
+      ...(from ? { gte: from } : {}),
+      ...(to ? { lte: to } : {}),
     }
   }
+
   const [income, expense] = await Promise.all([
     prisma.transaction.aggregate({
       where: { ...where, type: 'income' },
@@ -98,8 +122,10 @@ async function execGetSummary(userId: string, args: { dateFrom?: string; dateTo?
       _count: true,
     }),
   ])
+
   const totalIncome = (income._sum.amount ?? 0) / 100
   const totalExpense = (expense._sum.amount ?? 0) / 100
+
   return {
     income: totalIncome,
     expense: totalExpense,
@@ -110,14 +136,18 @@ async function execGetSummary(userId: string, args: { dateFrom?: string; dateTo?
 
 async function execGetSpendingByCategory(
   userId: string,
-  args: { dateFrom?: string; dateTo?: string; type: 'income' | 'expense' }
+  args: { dateFrom?: string; dateTo?: string; type?: string }
 ) {
-  const where: any = { userId, type: args.type }
+  const normalizedType = args.type?.toLowerCase().startsWith('inc') ? 'income' : 'expense'
+  const where: any = { userId, type: normalizedType }
 
-  if (args.dateFrom || args.dateTo) {
+  const from = parseSafeDate(args.dateFrom)
+  const to = parseSafeDate(args.dateTo)
+
+  if (from || to) {
     where.date = {
-      ...(args.dateFrom ? { gte: new Date(args.dateFrom) } : {}),
-      ...(args.dateTo ? { lte: new Date(args.dateTo) } : {}),
+      ...(from ? { gte: from } : {}),
+      ...(to ? { lte: to } : {}),
     }
   }
 
@@ -129,7 +159,6 @@ async function execGetSpendingByCategory(
     orderBy: { _sum: { amount: 'desc' } },
   })
 
-  // подтягиваем имена категорий
   const categoryIds = result.map((r) => r.categoryId)
   const categories = await prisma.category.findMany({
     where: { id: { in: categoryIds } },
@@ -146,8 +175,8 @@ async function execGetSpendingByCategory(
   }))
 }
 
-async function execGetMonthlyTrend(userId: string, args: { months?: number }) {
-  const monthsCount = args.months ?? 3
+async function execGetMonthlyTrend(userId: string, args: { months?: number | string }) {
+  const monthsCount = Math.min(Math.max(Number(args.months) || 3, 1), 24)
   const since = new Date()
   since.setMonth(since.getMonth() - monthsCount)
 
@@ -167,16 +196,27 @@ async function execGetMonthlyTrend(userId: string, args: { months?: number }) {
 
 async function execGetRecentTransactions(
   userId: string,
-  args: { limit?: number; type?: string; categoryId?: string }
+  args: { limit?: number | string; type?: string; categoryId?: string }
 ) {
   const where: any = { userId }
-  if (args.type) where.type = args.type
-  if (args.categoryId) where.categoryId = args.categoryId
+
+  if (args.type) {
+    where.type = args.type.toLowerCase().startsWith('inc') ? 'income' : 'expense'
+  }
+
+  if (args.categoryId) {
+    where.category = {
+      OR: [
+        { id: args.categoryId },
+        { name: { contains: args.categoryId, mode: 'insensitive' } },
+      ],
+    }
+  }
 
   const transactions = await prisma.transaction.findMany({
     where,
     orderBy: { date: 'desc' },
-    take: args.limit ?? 10,
+    take: parseSafeLimit(args.limit),
     include: { category: true },
   })
 
@@ -189,31 +229,43 @@ async function execGetRecentTransactions(
   }))
 }
 
-
-// диспетчер вызова тулзов
+// self-Correction loop при сбоях в базе
 async function executeTool(userId: string, name: string, args: any) {
-  switch (name) {
-    case 'get_summary':
-      return await execGetSummary(userId, args)
-    case 'get_spending_by_category':
-      return await execGetSpendingByCategory(userId, args)
-    case 'get_monthly_trend':
-      return await execGetMonthlyTrend(userId, args)
-    case 'get_recent_transactions':
-      return await execGetRecentTransactions(userId, args)
-    default:
-      throw new Error(`Неизвестный инструмент: ${name}`)
+  try {
+    switch (name) {
+      case 'get_summary':
+        return await execGetSummary(userId, args)
+      case 'get_spending_by_category':
+        return await execGetSpendingByCategory(userId, args)
+      case 'get_monthly_trend':
+        return await execGetMonthlyTrend(userId, args)
+      case 'get_recent_transactions':
+        return await execGetRecentTransactions(userId, args)
+      default:
+        return { error: `Неизвестная функция: ${name}` }
+    }
+  } catch (error: any) {
+    console.error(`Ошибка выполнения тулза ${name}:`, error)
+    return {
+      error: `Не удалось получить данные: ${error.message || 'Ошибка базы данных'}. Попробуй переформулировать запрос или запросить данные без фильтра.`,
+    }
   }
 }
 
-// системный промпт
+// временные метки в системном промпте
 function getSystemPrompt() {
-  const today = new Date().toISOString().split('T')[0]
+  const now = new Date()
+  const today = now.toISOString().split('T')[0]
+  const currentYear = now.getFullYear()
+  const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0')
+  const currentMonthStart = `${currentYear}-${currentMonthNum}-01`
+
   return `Ты — умный и дружелюбный финансовый ассистент приложения Finance Tracker.
 Твоя задача — помогать пользователю анализировать его личные доходы, расходы и финансовые привычки.
 
-Контекст:
+Контекст времени:
 - Сегодняшняя дата: ${today}.
+- Текущий месяц: ${currentYear}-${currentMonthNum} (начало месяца: ${currentMonthStart}).
 - Все суммы в ответах форматируй понятно (например: 12 500 ₽).
 
 Правила работы:
@@ -222,9 +274,6 @@ function getSystemPrompt() {
 3. Если пользователь задает общие финансовые вопросы (например, про накопления, инвестиции или финансовую грамотность) — дай полезный и лаконичный совет.
 4. Если вопрос вообще не относится к финансам (например, про погоду, политику, знаменитостей) — вежливо напомни, что ты специализированный финансовый ассистент, и предложи узнать что-то о его финансах.`
 }
-
-
-
 
 const TOOL_LABELS: Record<string, string> = {
   get_summary: 'Считаю баланс и итоги...',
@@ -267,62 +316,66 @@ assistantRouter.post('/chat', async (req, res): Promise<any> => {
   }
 
   try {
+    // небольшой контекст
+    const recentHistory = history.slice(-8)
+
     const messages: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: 'system', content: getSystemPrompt() },
-      ...history.map((h) => ({ role: h.role, content: h.content })),
+      ...recentHistory.map((h) => ({ role: h.role, content: h.content })),
       { role: 'user', content: message },
     ]
 
-    const firstResponse = await groq.chat.completions.create({
-      model: MODEL,
-      messages,
-      tools,
-      tool_choice: 'auto',
-    })
+    let maxSteps = 5
 
-    const choice = firstResponse.choices[0]
+    while (maxSteps > 0) {
+      maxSteps--
 
-    // вызов тулза
-    if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
-      messages.push(choice.message)
-
-      for (const toolCall of choice.message.tool_calls) {
-        const toolLabel = TOOL_LABELS[toolCall.function.name] || 'Запрашиваю данные из базы...'
-        sendEvent({ type: 'tool_calling', tool: toolLabel })
-
-        let toolArgs = {}
-        try {
-          toolArgs = JSON.parse(toolCall.function.arguments || '{}')
-        } catch {
-          toolArgs = {}
-        }
-
-        const toolResult = await executeTool(userId, toolCall.function.name, toolArgs)
-
-        messages.push({
-          role: 'tool',
-          tool_call_id: toolCall.id,
-          content: JSON.stringify(toolResult),
-        })
-      }
-
-      // стримим финальный ответ на основе данных из БД
-      const stream = await groq.chat.completions.create({
+      const response = await groq.chat.completions.create({
         model: MODEL,
         messages,
-        stream: true,
+        tools,
+        tool_choice: 'auto',
       })
 
-      for await (const chunk of stream) {
-        const text = chunk.choices[0]?.delta?.content || ''
+      const choice = response.choices[0]
+
+      // вызов тулза
+      if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
+        messages.push(choice.message)
+
+        for (const toolCall of choice.message.tool_calls) {
+          const toolLabel = TOOL_LABELS[toolCall.function.name] || 'Запрашиваю данные из базы...'
+          sendEvent({ type: 'tool_calling', tool: toolLabel })
+
+          let toolArgs = {}
+          try {
+            toolArgs = JSON.parse(toolCall.function.arguments || '{}')
+          } catch {
+            toolArgs = {}
+          }
+
+          const toolResult = await executeTool(userId, toolCall.function.name, toolArgs)
+
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(toolResult),
+          })
+        }
+      } else {
+        // убираем любые случайные теги и разметку
+        let text = choice.message.content || ''
+        text = text
+          .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
+          .replace(/<function=[\s\S]*?<\/function>/gi, '')
+          .replace(/\[TOOL_CALL\][\s\S]*?\[\/TOOL_CALL\]/gi, '')
+          .trim()
+
         if (text) {
           sendEvent({ type: 'chunk', text })
         }
+        break
       }
-    } else {
-      // прямой ответ без вызова инструментов
-      const text = choice.message.content || ''
-      sendEvent({ type: 'chunk', text })
     }
 
     sendEvent({ type: 'done' })
