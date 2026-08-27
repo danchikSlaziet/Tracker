@@ -18,6 +18,7 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import jwt from 'jsonwebtoken'
 import { parseCookie } from 'cookie'
+import { assistantRouter } from './routes/assistant.route'
 
 // ебучее подключение к бд в 7-ой Призме
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -62,14 +63,27 @@ app.get('/api/health', (req, res) => {
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10000,                   // максимум 10000 запросов с одного IP за окно
+  max: 1000,                   // максимум 1000 запросов с одного IP за окно
   message: { error: 'Слишком много попыток, попробуйте позже' },
+})
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: { error: 'Слишком много запросов к API, попробуйте позже' },
+})
+
+const assistantLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Слишком много запросов к AI-ассистенту, попробуйте позже' },
 })
 
 app.use('/api/auth', authLimiter, authRouter)
-app.use('/api/transactions', authMiddleware, transactionsRouter)
-app.use('/api/categories', authMiddleware, categoriesRouter)
-app.use('/api/user', authMiddleware, userRouter)
+app.use('/api/transactions', authMiddleware, apiLimiter, transactionsRouter)
+app.use('/api/categories', authMiddleware, apiLimiter, categoriesRouter)
+app.use('/api/user', authMiddleware, apiLimiter, userRouter)
+app.use('/api/assistant', authMiddleware, assistantLimiter, assistantRouter)
+
 
 const server = createServer(app)
 
