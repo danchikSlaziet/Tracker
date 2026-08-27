@@ -99,10 +99,11 @@ PORT=3000
 RESEND_API_KEY="your_resend_api_key"
 CORS_ORIGIN="http://localhost:5173"
 GEMINI_API_KEY="your_gemini_api_key"
-GEMINI_API_BASE_URL="https://generativelanguage.googleapis.com"
+GEMINI_API_BASE_URL="https://someurl.com"
 GEMINI_MODEL="gemini-2.5-flash"
 TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
 GROQ_API_KEY="your_groq_api_key"
+GROQ_API_BASE_URL="https://someurl.com"
 ```
 
 `apps/frontend/.env`:

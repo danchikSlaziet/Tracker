@@ -6,7 +6,7 @@ import { z } from 'zod'
 export const assistantRouter = Router()
 
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY || 'dummy_key',
   baseURL: process.env.GROQ_API_BASE_URL || undefined,
 })
 const MODEL = 'qwen/qwen3.8-27b'
