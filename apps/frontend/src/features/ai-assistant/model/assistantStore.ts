@@ -87,12 +87,17 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
             set({ isLoading: false, currentToolStatus: null })
           },
           onError: (err) => {
+            const errStr = String(err || '')
+            const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
+              ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+              : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
+
             set((state) => ({
               isLoading: false,
               currentToolStatus: null,
               messages: state.messages.map((msg) =>
                 msg.id === assistantTempId
-                  ? { ...msg, content: msg.content || `⚠️ Ошибка: ${err}` }
+                  ? { ...msg, content: msg.content || `⚠️ ${friendlyMessage}` }
                   : msg
               ),
             }))
@@ -100,12 +105,17 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
         }
       )
     } catch (err: any) {
+      const errStr = String(err?.message || '')
+      const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
+        ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+        : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
+
       set((state) => ({
         isLoading: false,
         currentToolStatus: null,
         messages: state.messages.map((msg) =>
           msg.id === assistantTempId
-            ? { ...msg, content: msg.content || `⚠️ Ошибка: ${err.message}` }
+            ? { ...msg, content: msg.content || `⚠️ ${friendlyMessage}` }
             : msg
         ),
       }))
