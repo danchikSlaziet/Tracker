@@ -6,15 +6,17 @@ import { Suspense, useState } from 'react'
 import { PageLoader, Avatar } from '@finance/ui-kit'
 import { ProfileModal } from '@/features/profile'
 import { ThemeSwitcher } from '@/features/theme'
-import { 
-  LayoutDashboard, 
-  ArrowLeftRight, 
-  Tag, 
-  LogOut, 
-  Menu, 
-  X, 
-  ChevronLeft, 
-  ChevronRight 
+import { AssistantModal, useAssistantStore } from '@/features/ai-assistant'
+import {
+  LayoutDashboard,
+  ArrowLeftRight,
+  Tag,
+  LogOut,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react'
 
 export function Layout() {
@@ -32,9 +34,12 @@ export function Layout() {
     setIsMobileOpen(false)
   }
 
+  const { setIsOpen: setIsAssistantOpen } = useAssistantStore()
+
+
   return (
     <div className={`${styles.root} ${isCollapsed ? styles.rootCollapsed : ''}`}>
-      {/* 1. Мобильная шапка */}
+      {/* бургер меню */}
       <header className={styles.mobileHeader}>
         <button
           className={styles.burgerBtn}
@@ -54,7 +59,7 @@ export function Layout() {
         </div>
       </header>
 
-      {/* 2. Затемнение фона при открытии меню на мобилке */}
+      {/* Затемнение фона при открытии меню на мобилке */}
       {isMobileOpen && (
         <div
           className={styles.backdrop}
@@ -62,7 +67,7 @@ export function Layout() {
         />
       )}
 
-      {/* 3. Единый Сайдбар */}
+      {/* Единый Сайдбар */}
       <aside
         className={`
           ${styles.sidebar}
@@ -115,6 +120,25 @@ export function Layout() {
             <span className={styles.navIcon}><Tag size={18} /></span>
             {!isCollapsed && <span className={styles.navText}>Категории</span>}
           </NavLink>
+          <button
+            type="button"
+            onClick={() => {
+              setIsAssistantOpen(true)
+              handleNavClick()
+            }}
+            className={styles.navLink}
+            title="AI Ассистент"
+            style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+          >
+            <span className={styles.navIcon} style={{ color: '#8b5cf6' }}>
+              <Sparkles size={18} />
+            </span>
+            {!isCollapsed && (
+              <span className={styles.navText} style={{ fontWeight: 600, color: '#8b5cf6' }}>
+                AI Ассистент
+              </span>
+            )}
+          </button>
         </nav>
 
         <div className={styles.sidebarFooter}>
@@ -150,7 +174,7 @@ export function Layout() {
         </div>
       </aside>
 
-      {/* 4. Главный контент */}
+      {/* контент */}
       <main className={styles.main}>
         <Suspense key={location.pathname} fallback={<PageLoader />}>
           <Outlet />
@@ -164,6 +188,8 @@ export function Layout() {
           user={user}
         />
       )}
+
+      <AssistantModal />
     </div>
   )
 }
