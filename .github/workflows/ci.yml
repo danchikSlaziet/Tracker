@@ -76,6 +76,8 @@ jobs:
       PORT: 3000
       VITE_API_URL: "http://localhost:3000/api"
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      GROQ_API_KEY: "test-groq-key-for-ci"
+      GROQ_API_BASE_URL: "https://someurl.com"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -144,6 +146,7 @@ jobs:
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_API_BASE_URL: ${{ secrets.GROQ_API_BASE_URL }}
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -151,7 +154,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DB_USER,DB_PASSWORD,DB_NAME,JWT_SECRET,RESEND_API_KEY,CORS_ORIGIN,GEMINI_API_KEY,GEMINI_MODEL,GEMINI_API_BASE_URL,TELEGRAM_BOT_TOKEN,VITE_API_URL,VITE_TELEGRAM_BOT_USERNAME,VITE_SENTRY_DSN,SENTRY_AUTH_TOKEN,GROQ_API_KEY
+          envs: DB_USER,DB_PASSWORD,DB_NAME,JWT_SECRET,RESEND_API_KEY,CORS_ORIGIN,GEMINI_API_KEY,GEMINI_MODEL,GEMINI_API_BASE_URL,TELEGRAM_BOT_TOKEN,VITE_API_URL,VITE_TELEGRAM_BOT_USERNAME,VITE_SENTRY_DSN,SENTRY_AUTH_TOKEN,GROQ_API_KEY,GROQ_API_BASE_URL
           script: |
             cd ~/Tracker
             git pull origin main
@@ -173,6 +176,7 @@ jobs:
             VITE_SENTRY_DSN="$VITE_SENTRY_DSN"
             SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN"
             GROQ_API_KEY="$GROQ_API_KEY"
+            GROQ_API_BASE_URL="$GROQ_API_BASE_URL"
             EOF
 
             docker compose up --build -d
