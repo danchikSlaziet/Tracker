@@ -55,3 +55,22 @@ export interface PaginatedResponse<T> {
     limit: number
   }
 }
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  toolStatus?: string
+  createdAt: string
+}
+
+export type AssistantStreamEvent =
+  | { type: 'chunk'; text: string }
+  | { type: 'tool_calling'; tool: string }
+  | { type: 'done' }
+  | { type: 'error'; text: string }
+
+export interface AssistantChatDto {
+  message: string
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>
+}

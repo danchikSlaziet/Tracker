@@ -10,7 +10,9 @@ Full-stack монорепозиторий для учёта личных фин�
 - **Безопасность токенов**: Хранение JWT исключительно в `httpOnly` и `sameSite` куках.
 - **Защита бэкенда**: Хеширование паролей с помощью bcrypt (12 раундов), использование Helmet (Security Headers), строго настроенный CORS и Rate Limiting для чувствительных роутов.
 
-### ИИ-анализ и WebSockets
+### ИИ-анализ, Агенты и WebSockets
+- **AI Финансовый ассистент (Agentic Loop & Function Calling)**: Интерактивный диалоговый ассистент на базе модели Qwen 2.5 / Groq API. Самостоятельно выбирает и вызывает инструменты (Tool Use) для выборки баланса, категорий, трендов и истории операций из PostgreSQL без выгрузки сырых данных в промпт.
+- **Потоковая передача (SSE Streaming)**: Посимвольная генерация ответов в реальном времени с отображением текущего статуса выполнения инструментов.
 - **Парсинг выписок**: Автоматический разбор банковских PDF-выписок (Т-Банк, Сбербанк, Альфа-Банк) с использованием Google Gemini Flash API и структурированного вывода в JSON.
 - **Real-time уведомления**: Трансляция текущего статуса обработки PDF-выписки на клиент через WebSockets (Socket.io) без необходимости опрашивать сервер.
 
@@ -51,6 +53,7 @@ Full-stack монорепозиторий для учёта личных фин�
 - [ADR 0004: Монорепозиторий и общие типы](docs/adr/0004-monorepo-structure-npm-workspaces.md)
 - [ADR 0005: ИИ-парсинг PDF и WebSockets](docs/adr/0005-ai-pdf-parsing-gemini-and-websockets.md)
 - [ADR 0006: Стратегия тестирования](docs/adr/0006-testing-strategy-vitest-and-playwright.md)
+- [ADR 0007: AI-ассистент, Function Calling и SSE стриминг](docs/adr/0007-ai-assistant-agentic-loop-and-sse.md)
 
 ---
 
@@ -62,11 +65,12 @@ Full-stack монорепозиторий для учёта личных фин�
 - **Forms & Validation**: React Hook Form, Zod
 - **Styling**: CSS Modules, Vanilla CSS (Design Tokens, Dark/Light theme)
 - **Visualization**: Recharts
+- **Streaming & Markdown**: @microsoft/fetch-event-source, react-markdown
 
 ### Backend
 - **Core**: Node.js, Express.js, TypeScript
 - **Database & ORM**: PostgreSQL, Prisma ORM
-- **Real-time & AI**: Socket.io, Google Gemini 1.5/2.5 Flash API
+- **Real-time & AI**: Socket.io, Google Gemini 1.5/2.5 Flash API, Groq SDK (Qwen 2.5)
 - **Email**: Resend API
 - **Security**: bcrypt, Helmet.js, express-rate-limit, cors
 
@@ -95,13 +99,18 @@ PORT=3000
 RESEND_API_KEY="your_resend_api_key"
 CORS_ORIGIN="http://localhost:5173"
 GEMINI_API_KEY="your_gemini_api_key"
+GEMINI_API_BASE_URL="https://generativelanguage.googleapis.com"
+GEMINI_MODEL="gemini-2.5-flash"
 TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
+GROQ_API_KEY="your_groq_api_key"
 ```
 
 `apps/frontend/.env`:
 ```env
-VITE_API_URL=http://localhost:3000/api
-VITE_TELEGRAM_BOT_USERNAME=your_bot_username
+VITE_API_URL="http://localhost:3000/api"
+VITE_TELEGRAM_BOT_USERNAME="your_bot_username"
+VITE_SENTRY_DSN="your_sentry_dsn"
+SENTRY_AUTH_TOKEN="your_sentry_auth_token"
 ```
 
 ### 3. База данных
