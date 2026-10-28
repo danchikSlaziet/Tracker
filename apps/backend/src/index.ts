@@ -63,21 +63,31 @@ app.get('/api/health', (req, res) => {
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,                   // максимум 1000 запросов с одного IP за окно
+  max: 60,                   // 60 запросов с одного IP за окно
   message: { error: 'Слишком много попыток, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
+})
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Слишком много попыток ввода кода, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
 })
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
   message: { error: 'Слишком много запросов к API, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
 })
 
 const assistantLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Слишком много запросов к AI-ассистенту, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
 })
 
+app.use('/api/auth/verify-otp', otpLimiter)
 app.use('/api/auth', authLimiter, authRouter)
 app.use('/api/transactions', authMiddleware, apiLimiter, transactionsRouter)
 app.use('/api/categories', authMiddleware, apiLimiter, categoriesRouter)

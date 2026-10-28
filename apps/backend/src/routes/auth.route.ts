@@ -8,6 +8,7 @@ import { authMiddleware } from '../middleware/auth.middleware'
 import type { AuthResponse, UserDto } from '@finance/shared-types'
 import { verifyTelegramHash } from '../lib/verifyTelegramHash'
 import type { TelegramAuthData } from '@finance/shared-types'
+import { randomInt } from 'crypto'
 
 export const authRouter = Router()
 
@@ -28,7 +29,7 @@ const telegramAuthSchema = z.object({
   hash: z.string(),
 })
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
+const generateOTP = () => randomInt(100000, 1000000).toString()
 
 const sendVerificationEmail = async (email: string, otpCode: string) => {
   try {
