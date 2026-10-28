@@ -71,7 +71,8 @@ authRouter.post('/register', async (req, res): Promise<any> => {
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
   const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000) // через 15 мин
 
-  const isTestUser = email.startsWith('e2e-user-') && email.endsWith('@test.com')
+  const isTestUser = process.env.NODE_ENV !== 'production'
+    && email.startsWith('e2e-user-') && email.endsWith('@test.com')
   const otpCode = isTestUser ? '123456' : generateOTP()
 
   const user = await prisma.user.create({

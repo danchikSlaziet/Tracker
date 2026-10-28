@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useCreateCategory, useUpdateCategory } from '@/entities/category'
 import type { Category } from '@/entities/category'
-import { CategoryForm, CategoryList, CategoryModal, type CategoryFormValues } from '@/features/caregories'
+import { CategoryForm, CategoryList, CategoryModal, type CategoryFormValues } from '@/features/categories'
 import styles from './CategoriesWidget.module.css'
 import { Button } from '@finance/ui-kit'
 import { Plus } from 'lucide-react'

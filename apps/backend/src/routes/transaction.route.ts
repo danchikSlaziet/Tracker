@@ -352,7 +352,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
 
     // создаем новые иишные категории
     if (newCategoriesToCreate.size > 0) {
-      // createMany в Prisma/Postgres не умеет возвращать сгенерированные ID записей (??? чзнх)
+      // createMany не возвращает созданные записи, а их id нужны для привязки транзакций, поэтому создаём по одной
       const createdCategories = await Promise.all(
         Array.from(newCategoriesToCreate.values()).map(async (catData) => {
           const newCat = await prisma.category.create({
