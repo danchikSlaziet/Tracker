@@ -85,6 +85,7 @@ userRouter.post('/avatar', (req, res) => {
         email: updatedUser.email,
         isVerified: updatedUser.isVerified,
         avatarUrl: updatedUser.avatarUrl,
+        telegramId: updatedUser.telegramId,
       }
 
       return res.json({ user: responseUser })
@@ -127,6 +128,7 @@ userRouter.delete('/avatar', async (req, res): Promise<any> => {
       email: updatedUser.email,
       isVerified: updatedUser.isVerified,
       avatarUrl: updatedUser.avatarUrl,
+      telegramId: updatedUser.telegramId,
     }
 
     return res.json({ user: responseUser })

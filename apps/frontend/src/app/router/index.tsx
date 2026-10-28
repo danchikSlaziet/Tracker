@@ -8,7 +8,6 @@ import { useThemeStore } from '@/shared/lib/useThemeStore'
 import { VerifyPage } from '@/pages/Verify'
 
 
-// лень))
 const DashboardPage = lazy(() =>
   import('@/pages/Dashboard').then(m => ({ default: m.DashboardPage }))
 )

@@ -34,7 +34,12 @@ export function Layout() {
     setIsMobileOpen(false)
   }
 
-  const { setIsOpen: setIsAssistantOpen } = useAssistantStore()
+  const setIsAssistantOpen = useAssistantStore((state) => state.setIsOpen)
+  const resetAssistant = useAssistantStore((state) => state.reset)
+  const handleLogout = () => {
+    resetAssistant()
+    logout()
+  }
 
 
   return (
@@ -52,9 +57,9 @@ export function Layout() {
         <div className={styles.mobileHeaderRight}>
           <ThemeSwitcher />
           {user && (
-            <div className={styles.mobileAvatar} onClick={() => setIsProfileOpen(true)}>
+            <button aria-label="Открыть профиль" type='button' className={styles.mobileAvatar} onClick={() => setIsProfileOpen(true)}>
               <Avatar src={user.avatarUrl} email={user.email} size="sm" />
-            </div>
+            </button>
           )}
         </div>
       </header>
@@ -126,15 +131,14 @@ export function Layout() {
               setIsAssistantOpen(true)
               handleNavClick()
             }}
-            className={styles.navLink}
+            className={`${styles.navLink} ${styles.assistantLink}`}
             title="AI Ассистент"
-            style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
           >
-            <span className={styles.navIcon} style={{ color: '#8b5cf6' }}>
+            <span className={`${styles.navIcon} ${styles.assistantAccent}`}>
               <Sparkles size={18} />
             </span>
             {!isCollapsed && (
-              <span className={styles.navText} style={{ fontWeight: 600, color: '#8b5cf6' }}>
+              <span className={`${styles.navText} ${styles.assistantAccent}`}>
                 AI Ассистент
               </span>
             )}
@@ -147,7 +151,9 @@ export function Layout() {
           </div>
 
           {user && (
-            <div
+            <button
+              type='button'
+              aria-label="Открыть профиль"
               className={styles.profileBlock}
               onClick={() => {
                 setIsProfileOpen(true)
@@ -159,11 +165,11 @@ export function Layout() {
               {!isCollapsed && (
                 <span className={styles.profileEmail}>{user.email}</span>
               )}
-            </div>
+            </button>
           )}
 
           <button
-            onClick={() => logout()}
+            onClick={handleLogout}
             disabled={isPending}
             className={styles.logoutBtn}
             title="Выйти"

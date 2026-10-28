@@ -42,6 +42,9 @@
 .mobileAvatar {
   cursor: pointer;
   display: flex;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 .logo {
@@ -131,6 +134,20 @@
   flex-shrink: 0;
 }
 
+.assistantLink {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.assistantAccent {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
 .sidebarFooter {
   margin-top: auto;
   display: flex;
@@ -156,6 +173,10 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   transition: border-color 0.15s ease;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
 
 .profileEmail {

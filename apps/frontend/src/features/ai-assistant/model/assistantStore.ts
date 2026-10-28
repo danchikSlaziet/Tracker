@@ -11,6 +11,7 @@ interface AssistantState {
   toggleOpen: () => void
   sendMessage: (userText: string) => Promise<void>
   clearChat: () => void
+  reset: () => void
 }
 
 const INITIAL_MESSAGE: ChatMessage = {
@@ -134,5 +135,8 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
       ],
       currentToolStatus: null,
     })
+  },
+  reset: () => {
+    set({ isOpen: false, messages: [INITIAL_MESSAGE], isLoading: false, currentToolStatus: null })
   },
 }))

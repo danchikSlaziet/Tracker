@@ -20,7 +20,7 @@ import jwt from 'jsonwebtoken'
 import { parseCookie } from 'cookie'
 import { assistantRouter } from './routes/assistant.route'
 
-// ебучее подключение к бд в 7-ой Призме
+// подключение к бд в 7-ой Призме
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
