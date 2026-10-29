@@ -35,6 +35,21 @@ const getTransactionsSchema = z.object({
   search: z.string().optional(),
 })
 
+const aiTransactionSchema = z.object({
+  date: z.string().refine((value) => !isNaN(Date.parse(value)), 'Некорректная дата'),
+  amount: z.coerce.number().positive(),
+  type: z.enum(['income', 'expense']),
+  description: z.string().min(1),
+  categoryId: z.string().nullish(),
+  newCategory: z
+    .object({
+      name: z.string().min(1),
+      icon: z.string().optional(),
+      color: z.string().optional(),
+    })
+    .nullish(),
+})
+
 
 transactionsRouter.get('/', async (req, res) => {
   const userId = req.userId
@@ -308,108 +323,99 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       return
     }
 
-    // 5. Ищем или создаем категорию "Неразобранное"
-    let unsortedCategory = categories.find(c => c.name === 'Неразобранное')
-    if (!unsortedCategory) {
-      unsortedCategory = await prisma.category.create({
-        data: {
-          name: 'Неразобранное',
-          icon: '📁',
-          color: '#94a3b8',
-          type: 'expense',
+    const validTransactions: z.infer<typeof aiTransactionSchema>[] = []
+    for (const item of parsedData) {
+      const result = aiTransactionSchema.safeParse(item)
+      if (result.success) validTransactions.push(result.data)
+    }
+    const skippedCount = parsedData.length - validTransactions.length
+
+    // добавление в БД
+    emitProgress(90, 'saving_database')
+    const created = await prisma.$transaction(async (tx) => { // служебный метод призмы $transaction для отката назад если один из шагов полетит
+      // 5. Ищем или создаем категорию "Неразобранное"
+      let unsortedCategory = categories.find(c => c.name === 'Неразобранное')
+      if (!unsortedCategory) {
+        unsortedCategory = await tx.category.create({
+          data: {
+            name: 'Неразобранное',
+            icon: '📁',
+            color: '#94a3b8',
+            type: 'expense',
+            userId
+          }
+        })
+      }
+
+      // 5.1 Обрабатываем новые категории, которые предложил ИИ
+
+      const categoryCache = new Map<string, string>()
+      for (const cat of categories) {
+        categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
+      }
+      categoryCache.set('неразобранное', unsortedCategory.id)
+
+      // через Map отсеиваем дубликаты внутри иишных категорий
+      const newCategoriesToCreate = new Map<string, { name: string, icon: string, color: string, type: 'income' | 'expense' }>()
+
+      for (const t of validTransactions) {
+        if (!t.categoryId && t.newCategory && t.newCategory.name) {
+          const catName = t.newCategory.name.trim()
+          const catNameLower = catName.toLowerCase()
+
+          // если такой категории еще нет в базе пользователя и мы ее еще не запланировали создать:
+          if (!categoryCache.has(catNameLower) && !newCategoriesToCreate.has(catNameLower)) {
+            newCategoriesToCreate.set(catNameLower, {
+              name: catName,
+              icon: t.newCategory.icon || '📁',
+              color: t.newCategory.color || '#94a3b8',
+              type: t.type === 'income' ? 'income' : 'expense'
+            })
+          }
+        }
+      }
+
+      // создаем новые иишные категории
+      if (newCategoriesToCreate.size > 0) {
+        for (const catData of newCategoriesToCreate.values()) {
+          const newCat = await tx.category.create({ data: { ...catData, userId } })
+          categoryCache.set(newCat.name.toLowerCase().trim(), newCat.id)
+        }
+      }
+
+      // 6. готовим транзакции для сохранения
+      const transactionsData = validTransactions.map(t => {
+        let finalCategoryId = unsortedCategory!.id
+
+        if (t.categoryId && categories.some(c => c.id === t.categoryId)) {
+          // если ИИ выбрал существующую категорию
+          finalCategoryId = t.categoryId
+        } else if (t.newCategory && t.newCategory.name) {
+          // если ИИ предложил новую категорию — ищем её ID в нашем кэше созданных категорий
+          const catNameLower = t.newCategory.name.trim().toLowerCase()
+          const cachedId = categoryCache.get(catNameLower)
+          if (cachedId) {
+            finalCategoryId = cachedId
+          }
+        }
+
+        return {
+          type: t.type === 'income' ? 'income' : 'expense',
+          amount: Math.round((Number(t.amount) || 0) * 100), // в копейках
+          description: t.description || 'Импортированная транзакция',
+          date: t.date ? new Date(t.date) : new Date(),
+          categoryId: finalCategoryId,
           userId
         }
       })
-    }
-
-    // 5.1 Обрабатываем новые категории, которые предложил ИИ
-
-    const categoryCache = new Map<string, string>()
-    for (const cat of categories) {
-      categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
-    }
-    categoryCache.set('неразобранное', unsortedCategory.id)
-
-    // через Map отсеиваем дубликаты внутри иишных категорий
-    const newCategoriesToCreate = new Map<string, { name: string, icon: string, color: string, type: 'income' | 'expense' }>()
-
-    for (const t of parsedData) {
-      if (!t.categoryId && t.newCategory && t.newCategory.name) {
-        const catName = t.newCategory.name.trim()
-        const catNameLower = catName.toLowerCase()
-
-        // если такой категории еще нет в базе пользователя и мы ее еще не запланировали создать:
-        if (!categoryCache.has(catNameLower) && !newCategoriesToCreate.has(catNameLower)) {
-          newCategoriesToCreate.set(catNameLower, {
-            name: catName,
-            icon: t.newCategory.icon || '📁',
-            color: t.newCategory.color || '#94a3b8',
-            type: t.type === 'income' ? 'income' : 'expense'
-          })
-        }
-      }
-    }
-
-    // создаем новые иишные категории
-    if (newCategoriesToCreate.size > 0) {
-      // createMany не возвращает созданные записи, а их id нужны для привязки транзакций, поэтому создаём по одной
-      const createdCategories = await Promise.all(
-        Array.from(newCategoriesToCreate.values()).map(async (catData) => {
-          const newCat = await prisma.category.create({
-            data: {
-              name: catData.name,
-              icon: catData.icon,
-              color: catData.color,
-              type: catData.type,
-              userId
-            }
-          })
-          return newCat
-        })
-      )
-
-      // добавляем созданные категории в наш кэш, чтобы привязать их к транзакциям
-      for (const cat of createdCategories) {
-        categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
-      }
-    }
-
-    // 6. готовим транзакции для сохранения
-    const transactionsData = parsedData.map(t => {
-      let finalCategoryId = unsortedCategory!.id
-
-      if (t.categoryId && categories.some(c => c.id === t.categoryId)) {
-        // если ИИ выбрал существующую категорию
-        finalCategoryId = t.categoryId
-      } else if (t.newCategory && t.newCategory.name) {
-        // если ИИ предложил новую категорию — ищем её ID в нашем кэше созданных категорий
-        const catNameLower = t.newCategory.name.trim().toLowerCase()
-        const cachedId = categoryCache.get(catNameLower)
-        if (cachedId) {
-          finalCategoryId = cachedId
-        }
-      }
-
-      return {
-        type: t.type === 'income' ? 'income' : 'expense',
-        amount: Math.round((Number(t.amount) || 0) * 100), // в копейках
-        description: t.description || 'Импортированная транзакция',
-        date: t.date ? new Date(t.date) : new Date(),
-        categoryId: finalCategoryId,
-        userId
-      }
-    })
-
-    emitProgress(90, 'saving_database')
-    // Массовое добавление в БД
-    const created = await prisma.transaction.createMany({
-      data: transactionsData
+      return tx.transaction.createMany({ data: transactionsData })
     })
     emitProgress(100, 'completed', { importedCount: created.count })
 
     res.json({
       message: 'Импорт завершен успешно',
       importedCount: created.count,
+      skippedCount
     })
   } catch (error: any) {
     console.error('Import error:', error)
