@@ -45,6 +45,7 @@ model Category {
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
 
+  @@index([userId])
   @@map("categories")
 }
 
@@ -62,5 +63,6 @@ model Transaction {
   category Category @relation(fields: [categoryId], references: [id])
   user     User     @relation(fields: [userId], references: [id])
 
+  @@index([userId, date])
   @@map("transactions")
 }

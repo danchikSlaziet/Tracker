@@ -96,6 +96,18 @@ app.use('/api/user', authMiddleware, apiLimiter, requireVerified, userRouter)
 app.use('/api/assistant', authMiddleware, assistantLimiter, requireVerified, assistantRouter)
 
 
+app.use((err: Error & { status?: number }, req: express.Request, res: express.Response, _next: express.NextFunction) => {  // обработчик ошибок (на фронт безопасные данные ошибок шлем)
+  const status = err.status && err.status < 500 ? err.status : 500
+
+  if (status === 500) {
+    console.error(`[${req.method} ${req.originalUrl}]`, err)
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' })
+    return
+  }
+
+  res.status(status).json({ error: err.message })
+})
+
 const server = createServer(app)
 
 const io = new Server(server, {
