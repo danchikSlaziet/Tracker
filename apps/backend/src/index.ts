@@ -19,6 +19,7 @@ import { Server } from 'socket.io'
 import jwt from 'jsonwebtoken'
 import { parseCookie } from 'cookie'
 import { assistantRouter } from './routes/assistant.route'
+import { requireVerified } from './middleware/requireVerified.middleware'
 
 // подключение к бд в 7-ой Призме
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -89,10 +90,10 @@ const assistantLimiter = rateLimit({
 
 app.use('/api/auth/verify-otp', otpLimiter)
 app.use('/api/auth', authLimiter, authRouter)
-app.use('/api/transactions', authMiddleware, apiLimiter, transactionsRouter)
-app.use('/api/categories', authMiddleware, apiLimiter, categoriesRouter)
-app.use('/api/user', authMiddleware, apiLimiter, userRouter)
-app.use('/api/assistant', authMiddleware, assistantLimiter, assistantRouter)
+app.use('/api/transactions', authMiddleware, apiLimiter, requireVerified, transactionsRouter)
+app.use('/api/categories', authMiddleware, apiLimiter, requireVerified, categoriesRouter)
+app.use('/api/user', authMiddleware, apiLimiter, requireVerified, userRouter)
+app.use('/api/assistant', authMiddleware, assistantLimiter, requireVerified, assistantRouter)
 
 
 const server = createServer(app)
