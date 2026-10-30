@@ -1,6 +1,12 @@
 import type { TelegramAuthData } from '@finance/shared-types'
 import { useEffect, useRef } from 'react'
 
+declare global {
+  interface Window {
+    TelegramLoginWidgetCallback?: (user: TelegramAuthData) => void
+  }
+}
+
 interface TelegramLoginButtonProps {
   onAuth: (user: TelegramAuthData) => void
 }
@@ -9,7 +15,7 @@ export function TelegramLoginButton({ onAuth }: TelegramLoginButtonProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    (window as any).TelegramLoginWidgetCallback = (user: TelegramAuthData) => {
+    (window).TelegramLoginWidgetCallback = (user: TelegramAuthData) => {
       onAuth(user)
     }
 
@@ -27,7 +33,7 @@ export function TelegramLoginButton({ onAuth }: TelegramLoginButtonProps) {
       if (ref.current) {
         ref.current.innerHTML = ''
       }
-      delete (window as any).TelegramLoginWidgetCallback
+      delete (window).TelegramLoginWidgetCallback
     }
   }, [])
 
