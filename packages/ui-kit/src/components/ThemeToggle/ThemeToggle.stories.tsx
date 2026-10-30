@@ -28,7 +28,7 @@ export const LightTheme: Story = {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Переключить тему' })
 
-    await expect(button).toHaveTextContent('🌙')
+    await expect(button).toHaveAttribute('title', 'Включить темную тему')
     await userEvent.click(button)
     await expect(args.onToggle).toHaveBeenCalledTimes(1)
   },
@@ -42,7 +42,7 @@ export const DarkTheme: Story = {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Переключить тему' })
 
-    await expect(button).toHaveTextContent('☀️')
+    await expect(button).toHaveAttribute('title', 'Включить светлую тему')
     await userEvent.click(button)
     await expect(args.onToggle).toHaveBeenCalledTimes(1)
   },

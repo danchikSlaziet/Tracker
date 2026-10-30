@@ -58,6 +58,13 @@ jobs:
         # Добавляем флаг --run, чтобы Vitest запустился один раз и завершился (без watch-мода)
         run: npm run test --workspace=@finance/frontend -- --run
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: ./packages/ui-kit
+
+      - name: Run UI Kit Tests
+        run: npm run test --workspace=@finance/ui-kit
+
   test-e2e:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
@@ -103,7 +110,7 @@ jobs:
 
       - name: Push Database Schema (Prisma)
         run: |
-          npx prisma db push
+          npx prisma migrate deploy
           npx prisma generate
         working-directory: ./apps/backend
 

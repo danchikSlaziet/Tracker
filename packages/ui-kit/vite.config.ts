@@ -22,7 +22,7 @@ export default defineConfig({
           configDir: path.join(dirname, '.storybook')
         })],
       test: {
-        name: 'storybook e2e',
+        name: 'storybook',
         browser: {
           enabled: true,
           headless: true,
