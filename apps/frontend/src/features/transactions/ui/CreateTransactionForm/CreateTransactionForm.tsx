@@ -1,5 +1,6 @@
 import { useCreateTransactionForm } from './useCreateTransactionForm'
 import styles from './CreateTransactionForm.module.css'
+import { getApiErrorMessage } from '@/shared/api'
 
 interface CreateTransactionFormProps {
   onSuccess?: () => void
@@ -86,7 +87,7 @@ export const CreateTransactionForm = ({ onSuccess, showTitle = false }: CreateTr
 
       {serverError && (
         <div className={styles.error}>
-          {(serverError as any)?.response?.data?.error || 'Произошла ошибка сервера'}
+          {getApiErrorMessage(serverError, 'Произошла ошибка сервера')}
         </div>
       )}
 

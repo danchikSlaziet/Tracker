@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ROUTES } from "@/shared/config";
 import { useTelegramAuth } from "../../api/useTelegramAuth";
 import type { TelegramAuthData } from "@finance/shared-types";
+import { getApiErrorMessage } from "@/shared/api";
 
 
 export const useRegisterForm = () => {
@@ -21,7 +22,7 @@ export const useRegisterForm = () => {
     telegramAuth(user, {
       onSuccess: () => navigate(ROUTES.HOME),
       onError: (error: any) => form.setError('root', {
-        message: error.response?.data?.error ?? 'Ошибка регистрации через Telegram',
+        message: getApiErrorMessage(error, 'Ошибка регистрации'),
       })
     })
   }
@@ -31,7 +32,7 @@ export const useRegisterForm = () => {
     register(data, {
       onSuccess: () => navigate(ROUTES.HOME),
       onError: (error: any) => form.setError('root', {
-        message: error.response?.data?.error ?? 'Ошибка регистрации'
+        message: getApiErrorMessage(error, 'Ошибка регистрации'),
       })
     })
   }

@@ -4,6 +4,7 @@ import styles from './ProfileModal.module.css'
 import { useDeleteAvatar, useUploadAvatar } from '../api/useAvatar'
 import { Avatar } from '@finance/ui-kit'
 import { X, Camera, Trash2 } from 'lucide-react'
+import { getApiErrorMessage } from '@/shared/api'
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -36,9 +37,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
 
     setError(null)
     uploadAvatar(file, {
-      onError: (err: any) => {
-        setError(err.response?.data?.error ?? 'Ошибка при загрузке аватара')
-      }
+      onError: (err) => setError(getApiErrorMessage(err, 'Ошибка при загрузке аватара'))
     })
   }
 
@@ -50,9 +49,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
     e.stopPropagation()
     setError(null)
     deleteAvatar(undefined, {
-      onError: (err: any) => {
-        setError(err.response?.data?.error ?? 'Ошибка при удалении аватара')
-      }
+      onError: (err) => setError(getApiErrorMessage(err, 'Ошибка при удалении аватара'))
     })
   }
 

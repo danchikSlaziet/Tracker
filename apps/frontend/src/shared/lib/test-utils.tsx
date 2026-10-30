@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { type ReactElement } from 'react'
+import { AxiosError, type AxiosResponse } from 'axios'
 
 // Создаем свежий QueryClient для КАЖДОГО теста, 
 // чтобы кэш из одного теста не ломал другой
@@ -12,6 +13,12 @@ const createTestQueryClient = () => new QueryClient({
     },
   },
 })
+
+export const createApiError = (message: string, status = 400) =>
+  new AxiosError('Request failed', 'ERR_BAD_REQUEST', undefined, undefined, {
+    data: { error: message },
+    status,
+  } as AxiosResponse)
 
 export const renderWithProviders = (
   ui: ReactElement,

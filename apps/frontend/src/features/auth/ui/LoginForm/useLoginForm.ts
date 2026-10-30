@@ -6,35 +6,36 @@ import { useLogin } from '../../api/useLogin'
 import { ROUTES } from '@/shared/config'
 import { useTelegramAuth } from '../../api/useTelegramAuth'
 import type { TelegramAuthData } from '@finance/shared-types'
+import { getApiErrorMessage } from '@/shared/api'
 
 export const useLoginForm = () => {
-    const navigate = useNavigate()
-    const { mutate: login, isPending } = useLogin()
-    const { mutate: telegramAuth } = useTelegramAuth()
+  const navigate = useNavigate()
+  const { mutate: login, isPending } = useLogin()
+  const { mutate: telegramAuth } = useTelegramAuth()
 
-    const form = useForm<LoginFormValues>({
-        resolver: zodResolver(loginSchema),
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onTelegramSuccess = (user: TelegramAuthData) => {
+    telegramAuth(user, {
+      onSuccess: () => navigate(ROUTES.HOME),
+      onError: (error) => form.setError('root', {
+        message: getApiErrorMessage(error, 'Ошибка входа'),
+      })
     })
+  }
 
-    const onTelegramSuccess = (user: TelegramAuthData) => {
-        telegramAuth(user, {
-            onSuccess: () => navigate(ROUTES.HOME),
-            onError: (error: any) => form.setError('root', {
-                message: error.response?.data?.error ?? 'Ошибка входа через Telegram',
-            })
+  const onSubmit = (data: LoginFormValues) => {
+    login(data, {
+      onSuccess: () => navigate(ROUTES.HOME),
+      onError: (error) => {
+        form.setError('root', {
+          message: getApiErrorMessage(error, 'Ошибка входа'),
         })
-    }
+      },
+    })
+  }
 
-    const onSubmit = (data: LoginFormValues) => {
-        login(data, {
-            onSuccess: () => navigate(ROUTES.HOME),
-            onError: (error: any) => {
-                form.setError('root', {
-                    message: error.response?.data?.error ?? 'Ошибка входа',
-                })
-            },
-        })
-    }
-
-    return { form, onTelegramSuccess, onSubmit: form.handleSubmit(onSubmit), isPending }
+  return { form, onTelegramSuccess, onSubmit: form.handleSubmit(onSubmit), isPending }
 }

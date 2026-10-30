@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { renderWithProviders } from '@/shared/lib/test-utils'
+import { createApiError, renderWithProviders } from '@/shared/lib/test-utils'
 import { RegisterForm } from './RegisterForm'
 import { ROUTES } from '@/shared/config'
 import { useRegister } from '../../api/useRegister'
@@ -81,9 +81,7 @@ describe('Компонент RegisterForm', () => {
 
     const mockMutateWithError = vi.fn().mockImplementation((_data, options) => {
       if (options?.onError) {
-        options.onError({
-          response: { data: { error: "Пользователь с таким email уже существует" } }
-        })
+        options.onError(createApiError('Пользователь с таким email уже существует', 409))
       }
     })
 

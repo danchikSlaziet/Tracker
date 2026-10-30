@@ -105,8 +105,8 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
           },
         }
       )
-    } catch (err: any) {
-      const errStr = String(err?.message || '')
+    } catch (err) {
+      const errStr = err instanceof Error ? err.message : ''
       const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
         ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
         : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
