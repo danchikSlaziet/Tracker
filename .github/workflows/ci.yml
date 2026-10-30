@@ -26,6 +26,15 @@ jobs:
       - name: Run Linter
         run: npm run lint --workspace=@finance/frontend
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        working-directory: ./apps/backend
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci" #фиктивный урл, джоба для построения типов по schema.prisma
+
+      - name: Type Check Backend
+        run: npm run typecheck --workspace=@finance/backend
+
       - name: Build Frontend
         run: npm run build --workspace=@finance/frontend
 
@@ -39,7 +48,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
@@ -86,7 +95,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
