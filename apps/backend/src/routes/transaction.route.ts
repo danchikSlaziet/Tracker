@@ -4,6 +4,7 @@ import { prisma } from '../index'
 import multer from 'multer'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { PaginatedResponse } from '@finance/shared-types'
+import { Prisma } from '@prisma/client'
 
 export const transactionsRouter = Router()
 
@@ -62,28 +63,28 @@ transactionsRouter.get('/', async (req, res) => {
 
   const { page, limit, type, categoryId, dateFrom, dateTo, search } = parsed.data
 
-  const where: any = {
+  const where: Prisma.TransactionWhereInput = {
     userId,
   }
 
   if (type) {
-    where.type = type as 'income' | 'expense'
+    where.type = type
   }
 
   if (categoryId) {
-    where.categoryId = categoryId as string
+    where.categoryId = categoryId
   }
 
   if (dateFrom || dateTo) {
     where.date = {
-      ...(dateFrom ? { gte: new Date(dateFrom as string) } : {}),
-      ...(dateTo ? { lte: new Date(dateTo as string) } : {}),
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
     }
   }
 
   if (search) {
     where.description = {
-      contains: search as string,
+      contains: search,
       mode: 'insensitive' // lowercase == uppercase
     }
   }
@@ -105,7 +106,7 @@ transactionsRouter.get('/', async (req, res) => {
     }),
     prisma.transaction.count({ where })
   ])
-  const response: PaginatedResponse<any> = {
+  const response: PaginatedResponse<(typeof transactions)[number]> = {
     data: transactions,
     meta: {
       totalCount,
@@ -211,7 +212,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
 
   const io = req.app.get('io')
 
-  const emitProgress = (percent: number, stage: string, metadata?: any) => {
+  const emitProgress = (percent: number, stage: string, metadata?: { importedCount?: number; error?: string }) => {
     if (io) {
       io.to(`user:${req.userId}`).emit('import:progress', { percent, stage, ...metadata })
     }
@@ -417,14 +418,15 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       importedCount: created.count,
       skippedCount
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Import error:', error)
+    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
 
     if (progressInterval) clearInterval(progressInterval)
-    emitProgress(0, 'failed', { error: error.message || 'Ошибка импорта' })
+    emitProgress(0, 'failed', { error: message || 'Ошибка импорта' })
 
 
-    const errorMessage = error.message || ''
+    const errorMessage = message || ''
 
     if (
       errorMessage.includes('User location is not supported') ||
@@ -438,8 +440,11 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
     }
 
     // Проверяем, исчерпан ли лимит запросов (код 429 или статус RESOURCE_EXHAUSTED)
+    const status = typeof error === 'object' && error !== null && 'status' in error
+      ? error.status
+      : undefined
     if (
-      error.status === 429 ||
+      status === 429 ||
       errorMessage.includes('429') ||
       errorMessage.includes('RESOURCE_EXHAUSTED')
     ) {
