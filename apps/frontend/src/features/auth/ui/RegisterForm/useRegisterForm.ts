@@ -21,7 +21,7 @@ export const useRegisterForm = () => {
   const onTelegramSuccess = (user: TelegramAuthData) => {
     telegramAuth(user, {
       onSuccess: () => navigate(ROUTES.HOME),
-      onError: (error: any) => form.setError('root', {
+      onError: (error) => form.setError('root', {
         message: getApiErrorMessage(error, 'Ошибка регистрации'),
       })
     })
@@ -31,7 +31,7 @@ export const useRegisterForm = () => {
   const onSubmit = (data: LoginFormValues) => {
     register(data, {
       onSuccess: () => navigate(ROUTES.HOME),
-      onError: (error: any) => form.setError('root', {
+      onError: (error) => form.setError('root', {
         message: getApiErrorMessage(error, 'Ошибка регистрации'),
       })
     })

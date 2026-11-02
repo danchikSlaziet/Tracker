@@ -141,7 +141,8 @@ io.use((socket, next) => {
     socket.data.userId = payload.userId
     next()
   } catch (error) {
-    console.log('Socket Auth: Ошибка верификации JWT токена:', (error as any).message)
+    const message = error instanceof Error ? error.message : 'неизвестная ошибка'
+    console.log('Socket Auth: Ошибка верификации JWT токена:', message)
     next(new Error('Authentication error: Invalid token'))
   }
 })

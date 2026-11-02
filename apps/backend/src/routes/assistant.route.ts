@@ -2,6 +2,7 @@ import { Router } from 'express'
 import Groq from 'groq-sdk'
 import { prisma } from '../index'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 
 export const assistantRouter = Router()
 
@@ -99,7 +100,7 @@ const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
 
 // Исполнители тулзов
 async function execGetSummary(userId: string, args: { dateFrom?: string; dateTo?: string }) {
-  const where: any = { userId }
+  const where: Prisma.TransactionWhereInput = { userId }
   const from = parseSafeDate(args.dateFrom)
   const to = parseSafeDate(args.dateTo)
 
@@ -138,8 +139,9 @@ async function execGetSpendingByCategory(
   userId: string,
   args: { dateFrom?: string; dateTo?: string; type?: string }
 ) {
+
   const normalizedType = args.type?.toLowerCase().startsWith('inc') ? 'income' : 'expense'
-  const where: any = { userId, type: normalizedType }
+  const where: Prisma.TransactionWhereInput = { userId, type: normalizedType }
 
   const from = parseSafeDate(args.dateFrom)
   const to = parseSafeDate(args.dateTo)
@@ -198,7 +200,7 @@ async function execGetRecentTransactions(
   userId: string,
   args: { limit?: number | string; type?: string; categoryId?: string }
 ) {
-  const where: any = { userId }
+  const where: Prisma.TransactionWhereInput = { userId }
 
   if (args.type) {
     where.type = args.type.toLowerCase().startsWith('inc') ? 'income' : 'expense'
@@ -229,25 +231,60 @@ async function execGetRecentTransactions(
   }))
 }
 
+const summaryArgsSchema = z.object({
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+})
+const spendingArgsSchema = z.object({
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  type: z.enum(['income', 'expense', 'incomes', 'expenses']),
+})
+const trendArgsSchema = z.object({
+  months: z.union([z.number(), z.string()]).optional(),
+})
+const recentArgsSchema = z.object({
+  limit: z.union([z.number(), z.string()]).optional(),
+  type: z.enum(['income', 'expense', 'incomes', 'expenses']).optional(),
+  categoryId: z.string().optional(),
+})
+
 // self-Correction loop при сбоях в базе
-async function executeTool(userId: string, name: string, args: any) {
+async function executeTool(userId: string, name: string, args: unknown) {
   try {
     switch (name) {
-      case 'get_summary':
-        return await execGetSummary(userId, args)
-      case 'get_spending_by_category':
-        return await execGetSpendingByCategory(userId, args)
-      case 'get_monthly_trend':
-        return await execGetMonthlyTrend(userId, args)
-      case 'get_recent_transactions':
-        return await execGetRecentTransactions(userId, args)
+      case 'get_summary': {
+        const parsed = summaryArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetSummary(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_summary' }
+      }
+      case 'get_spending_by_category': {
+        const parsed = spendingArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetSpendingByCategory(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_spending_by_category' }
+      }
+      case 'get_monthly_trend': {
+        const parsed = trendArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetMonthlyTrend(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_monthly_trend' }
+      }
+      case 'get_recent_transactions': {
+        const parsed = recentArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetRecentTransactions(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_recent_transactions' }
+      }
       default:
         return { error: `Неизвестная функция: ${name}` }
     }
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
     console.error(`Ошибка выполнения тулза ${name}:`, error)
     return {
-      error: `Не удалось получить данные: ${error.message || 'Ошибка базы данных'}. Попробуй переформулировать запрос или запросить данные без фильтра.`,
+      error: `Не удалось получить данные: ${message || 'Ошибка базы данных'}. Попробуй переформулировать запрос или запросить данные без фильтра.`,
     }
   }
 }
@@ -380,9 +417,10 @@ assistantRouter.post('/chat', async (req, res): Promise<any> => {
 
     sendEvent({ type: 'done' })
     res.end()
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
     console.error('Ошибка в работе AI-ассистента:', error)
-    sendEvent({ type: 'error', text: error.message || 'Ошибка генерации ответа' })
+    sendEvent({ type: 'error', text: message || 'Ошибка генерации ответа' })
     res.end()
   }
 })
