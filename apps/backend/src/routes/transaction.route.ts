@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../index'
 import multer from 'multer'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { PaginatedResponse } from '@finance/shared-types'
+import { CATEGORY_ICONS, PaginatedResponse } from '@finance/shared-types'
 import { Prisma } from '@prisma/client'
 
 export const transactionsRouter = Router()
@@ -269,7 +269,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
         - newCategory: Если categoryId равен null (категория не найдена в списке), создай для транзакции объект новой категории. Если categoryId заполнен, укажи null. 
           Объект newCategory должен содержать следующие поля:
           * name: Короткое и понятное название новой категории на русском языке (например, "Аптеки", "Спорт", "Аренда", "Коммунальные платежи", "Стриминг"). Максимум 2 слова.
-          * icon: Один наиболее подходящий emoji-символ (например, "💊" для аптек, "🍿" для кино).
+          * icon: один ключ строго из этого списка: ${CATEGORY_ICONS.join(', ')}.
           * color: Подходящий HEX-цвет для этой категории (например, "#ef4444").
 
         ПРАВИЛО ДЛЯ ВНУТРЕННИХ ПЕРЕВОДОВ:
@@ -340,7 +340,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
         unsortedCategory = await tx.category.create({
           data: {
             name: 'Неразобранное',
-            icon: '📁',
+            icon: 'uncategorized',
             color: '#94a3b8',
             type: 'expense',
             userId
@@ -364,11 +364,16 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
           const catName = t.newCategory.name.trim()
           const catNameLower = catName.toLowerCase()
 
+          const rawIcon = t.newCategory.icon
+          const icon = rawIcon && (CATEGORY_ICONS as readonly string[]).includes(rawIcon)
+            ? rawIcon
+            : 'uncategorized'
+
           // если такой категории еще нет в базе пользователя и мы ее еще не запланировали создать:
           if (!categoryCache.has(catNameLower) && !newCategoriesToCreate.has(catNameLower)) {
             newCategoriesToCreate.set(catNameLower, {
               name: catName,
-              icon: t.newCategory.icon || '📁',
+              icon: icon,
               color: t.newCategory.color || '#94a3b8',
               type: t.type === 'income' ? 'income' : 'expense'
             })

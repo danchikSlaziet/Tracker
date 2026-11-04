@@ -18,8 +18,9 @@ export const useVerifyForm = () => {
 
   const [resendStatus, setResendStatus] = useState<string | null>(null)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<VerifyFormValues>({
+  const { control, handleSubmit, formState: { errors } } = useForm<VerifyFormValues>({
     resolver: zodResolver(verifySchema),
+    defaultValues: { code: '' },
   })
 
   const verifyMutation = useMutation({
@@ -52,7 +53,7 @@ export const useVerifyForm = () => {
 
   return {
     email,
-    register,
+    control,
     handleSubmit,
     onSubmit,
     errors,

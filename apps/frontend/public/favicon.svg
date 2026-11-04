@@ -1,15 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
-  <!-- Obsidian dark base with hairline border -->
   <rect width="32" height="32" rx="8" fill="#09090B" />
-  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="7.25" stroke="#27272A" stroke-width="1.5" />
-
-  <!-- Architectural 'F' monogram in Linear/Swiss style -->
-  <!-- Top Bar -->
-  <rect x="8" y="7.5" width="16" height="3.5" rx="1.75" fill="#FAFAFA" />
-  
-  <!-- Vertical Stem -->
-  <rect x="8" y="7.5" width="3.5" height="17" rx="1.75" fill="#FAFAFA" />
-  
-  <!-- Middle Accent Bar (Emerald) -->
-  <rect x="8" y="14.25" width="11" height="3.5" rx="1.75" fill="#10B981" />
+  <rect x="8" y="9" width="16" height="1.75" rx="0.875" fill="#FAFAFA" />
+  <rect x="8" y="15.125" width="11" height="1.75" rx="0.875" fill="#FAFAFA" />
+  <rect x="8" y="21.25" width="7" height="1.75" rx="0.875" fill="#FAFAFA" />
 </svg>

@@ -172,13 +172,9 @@ export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportT
           </div>
         ) : (
           <div className={styles.uploadPrompt}>
-            <div className={styles.uploadIcon}>
-              <FileText size={32} />
-            </div>
-            <p className={styles.primaryText}>
-              Перетащите выписку сюда или <strong>нажмите для выбора</strong>
-            </p>
-            <p className={styles.secondaryText}>Поддерживаются только PDF-файлы до 10 МБ</p>
+            <FileText size={34} strokeWidth={1.5} />
+            <p className={styles.primaryText}>Перетащите PDF-выписку</p>
+            <p className={styles.secondaryText}>или нажмите, чтобы выбрать файл до 10 МБ</p>
           </div>
         )}
       </div>

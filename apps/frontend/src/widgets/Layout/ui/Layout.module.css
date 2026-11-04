@@ -140,11 +140,11 @@
   border: none;
   text-align: left;
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
 }
 
 .assistantAccent {
-  color: #8b5cf6;
+  color: var(--text-primary);
   font-weight: 600;
 }
 

@@ -1,0 +1,42 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.cell {
+  width: 100%;
+  height: 52px;
+  padding: 0;
+  text-align: center;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  outline: none;
+}
+
+.cell:focus {
+  border-color: var(--text-primary);
+}
+
+.cellError {
+  border-color: var(--danger);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--danger);
+  text-align: center;
+}

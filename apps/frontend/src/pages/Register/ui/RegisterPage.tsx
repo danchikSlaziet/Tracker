@@ -8,6 +8,7 @@ export function RegisterPage() {
     <div className={styles.page}>
       <PageMeta title="Регистрация" description="Создание нового аккаунта в Finance Tracker" />
       <ThemeSwitcher className={styles.themeBtn} />
+      <img className={styles.mark} src="/favicon.svg" alt="Finance" width={40} height={40} />
       <RegisterForm />
     </div>
   )

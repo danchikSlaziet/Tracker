@@ -1,12 +1,13 @@
 import { Router } from 'express'
 import { prisma } from '../index'
 import { z } from 'zod'
+import { CATEGORY_ICONS } from '@finance/shared-types'
 
 export const categoriesRouter = Router()
 
 const categorySchema = z.object({
   name: z.string().min(1, 'Название обязательно').max(50),
-  icon: z.string().min(1, 'Иконка обязательна'),
+  icon: z.enum(CATEGORY_ICONS, { error: 'Иконка обязательна' }),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Некорректный цвет (формат #RRGGBB)'),
   type: z.enum(['income', 'expense', 'both']),
 })

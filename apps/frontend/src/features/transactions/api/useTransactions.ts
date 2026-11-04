@@ -60,7 +60,7 @@ export const useCreateTransaction = () => {
       const matchedCategory = categories?.find((c) => c.id === newTxDto.categoryId) || {
         id: newTxDto.categoryId,
         name: 'Загрузка...',
-        icon: '🔄',
+        icon: 'other',
         color: '#ccc',
         type: newTxDto.type,
       }

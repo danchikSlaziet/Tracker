@@ -3,11 +3,11 @@ import styles from './TransactionList.module.css'
 
 export const TransactionListSkeleton = ({ count = 3 }: { count?: number }) => {
   return (
-    <div className={styles.container}>
+    <div className={styles.rows}>
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className={styles.transactionCard}>
           <div className={styles.iconBox}>
-            <Skeleton width={40} height={40} borderRadius={10} />
+            <Skeleton width={18} height={18} borderRadius={4} />
           </div>
           <div className={styles.contentBody}>
             <div className={styles.topRow}>

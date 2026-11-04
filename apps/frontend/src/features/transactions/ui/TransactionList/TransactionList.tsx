@@ -8,6 +8,7 @@ import { TransactionCategoryEditor } from '../TransactionCategoryEditor/Transact
 import { useIntersectionObserver } from '@/shared/lib/useIntersectionObserver'
 import { Trash2 } from 'lucide-react'
 import { TransactionListSkeleton } from './TransactionListSkeleton'
+import { CategoryIcon } from '@/entities/category'
 
 interface TransactionListProps {
   filters?: TransactionFilters
@@ -47,13 +48,14 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
 
   return (
     <div className={styles.container}>
+      <div className={styles.rows}>
       {transactions.map((tx) => {
         const isExpanded = expandedTxId === tx.id
 
         return (
           <div data-test-id="transaction-item" data-testid="transaction-item" key={tx.id} className={styles.transactionCard}>
-            <div className={styles.iconBox} style={{ backgroundColor: `${tx.category.color}20` }}>
-              {tx.category.icon}
+            <div className={styles.iconBox}>
+              <CategoryIcon name={tx.category.icon} size={18} color={tx.category.color} />
             </div>
 
             <div className={styles.contentBody}>
@@ -96,6 +98,7 @@ export const TransactionList = ({ filters }: TransactionListProps) => {
           </div>
         )
       })}
+      </div>
 
       <div ref={triggerRef} className={styles.trigger}>
         {isFetchingNextPage && <div className={styles.loader}>Подгрузка транзакций...</div>}

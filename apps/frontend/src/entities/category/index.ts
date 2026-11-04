@@ -9,3 +9,4 @@ export {
 export { getCategories, createCategory, updateCategory } from './api/categoriesApi'
 export type { CreateCategoryDto } from './api/categoriesApi'
 export type { CategoriesFilter } from './model/CategoryFilter'
+export { CategoryIcon } from './ui/CategoryIcon'
