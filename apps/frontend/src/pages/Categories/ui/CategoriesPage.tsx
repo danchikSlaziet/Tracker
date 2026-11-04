@@ -7,7 +7,7 @@ export const CategoriesPage = () => {
     <div className={styles.page}>
       <PageMeta title="Категории" description="Управление категориями расходов и доходов" />
       <header className={styles.header}>
-        <h1>Управление категориями</h1>
+        <h1>Категории</h1>
       </header>
       <CategoriesWidget />
     </div>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useCategories, useCreateCategory } from '@/entities/category'
+import { CategoryIcon, useCategories, useCreateCategory } from '@/entities/category'
 import { useUpdateTransactions } from '../../api/useTransactions'
 import styles from './TransactionCategoryEditor.module.css'
 import type { Category } from '@/entities/category'
@@ -54,7 +54,7 @@ export const TransactionCategoryEditor = ({
     try {
       const newCategory = await createCategory({
         name: newCategoryName.trim(),
-        icon: '📁',
+        icon: 'uncategorized',
         color: '#94a3b8',
         type: transactionType as 'income' | 'expense'
       })
@@ -71,11 +71,9 @@ export const TransactionCategoryEditor = ({
     <div className={styles.container} ref={dropdownRef}>
       <div
         className={styles.categoryBadge}
-        style={{ backgroundColor: `${currentCategory.color}20`, color: currentCategory.color }}
         onClick={() => setIsOpen(!isOpen)}
         title="Нажмите, чтобы изменить категорию"
       >
-        <span>{currentCategory.icon}</span>
         <span>{currentCategory.name}</span>
         <ChevronDown size={11} className={styles.arrowIcon} />
       </div>
@@ -90,7 +88,7 @@ export const TransactionCategoryEditor = ({
                 onClick={() => handleSelectCategory(cat.id)}
                 disabled={isUpdating}
               >
-                <span>{cat.icon}</span>
+                <CategoryIcon name={cat.icon} color={cat.color} />
                 <span>{cat.name}</span>
               </button>
             ))}

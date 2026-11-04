@@ -98,7 +98,7 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
               currentToolStatus: null,
               messages: state.messages.map((msg) =>
                 msg.id === assistantTempId
-                  ? { ...msg, content: msg.content || `⚠️ ${friendlyMessage}` }
+                  ? { ...msg, content: msg.content || friendlyMessage }
                   : msg
               ),
             }))
@@ -116,7 +116,7 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
         currentToolStatus: null,
         messages: state.messages.map((msg) =>
           msg.id === assistantTempId
-            ? { ...msg, content: msg.content || `⚠️ ${friendlyMessage}` }
+            ? { ...msg, content: msg.content || friendlyMessage }
             : msg
         ),
       }))

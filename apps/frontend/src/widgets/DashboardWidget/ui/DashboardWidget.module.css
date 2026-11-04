@@ -1,67 +1,37 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
   width: 100%;
 }
 
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
   width: 100%;
 }
 
 .card {
-  padding: 16px 20px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: border-color 0.15s ease;
+  gap: 6px;
+  padding-right: 28px;
+  border-right: 1px solid var(--border-color);
 }
 
-.card:hover {
-  border-color: var(--text-secondary);
+.card + .card {
+  padding-left: 28px;
 }
 
-.cardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+.card:last-child {
+  padding-right: 0;
+  border-right: none;
 }
 
 .cardLabel {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.cardIconBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius);
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-}
-
-.incomeIcon {
-  color: var(--success);
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.expenseIcon {
-  color: var(--danger);
-  background: rgba(239, 68, 68, 0.1);
+  font-weight: 500;
 }
 
 .cardValue {
@@ -124,7 +94,6 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   width: 100%;
 }
 
@@ -132,17 +101,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--card-shadow);
+  padding: 14px 0;
   gap: 12px;
-  transition: border-color 0.15s ease;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.transactionCard:hover {
-  border-color: var(--text-secondary);
+.transactionCard:last-child {
+  border-bottom: none;
 }
 
 .leftInfo {
@@ -155,12 +120,9 @@
 
 .iconBox {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius);
-  font-size: 20px;
+  justify-content: center;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -199,11 +161,10 @@
   gap: 6px;
 }
 
-.categoryBadge {
-  font-size: 11px;
+.categoryName {
+  font-size: 12px;
   font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 4px;
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
@@ -238,22 +199,29 @@
 .loadingState {
   color: var(--text-secondary);
   font-size: 14px;
-  text-align: center;
-  padding: 32px 16px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius);
-  border: 1px dashed var(--border-color);
+  padding: 4px 0;
 }
 
 /* === АДАПТИВ ДЛЯ МОБИЛОК === */
 @media (max-width: 640px) {
   .statsGrid {
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
   }
 
   .cardBalance {
     grid-column: 1 / -1;
+    align-items: center;
+    text-align: center;
+    padding: 0 0 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .cardIncome,
+  .cardExpense {
+    align-items: center;
+    text-align: center;
+    padding-top: 16px;
   }
 
   .cardValue {

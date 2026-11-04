@@ -13,7 +13,7 @@ test.describe('Управление категориями', () => {
     await categoriesPage.navigate();
     await expect(page).toHaveURL('/categories');
 
-    await categoriesPage.createCategory(categoryName, '🍔');
+    await categoriesPage.createCategory(categoryName);
     const card = categoriesPage.getCategoryCard(categoryName);
     await expect(card).toBeVisible();
 

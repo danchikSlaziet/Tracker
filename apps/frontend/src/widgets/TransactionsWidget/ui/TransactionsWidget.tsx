@@ -38,21 +38,19 @@ export const TransactionWidget = () => {
 
         <div className={styles.rightActions}>
           <button
-            className={styles.importBtn}
-            onClick={() => setIsImportModalOpen(true)}
-          >
-            <FileUp size={16} />
-            <span>Импорт PDF</span>
-          </button>
-
-          <Button
+            type="button"
+            className={styles.secondaryBtn}
             onClick={() => setIsCreateModalOpen(true)}
-            className={styles.createBtn}
             data-test-id="open-create-transaction-modal-btn"
             data-testid="open-create-transaction-modal-btn"
           >
             <Plus size={16} />
             <span>Транзакция</span>
+          </button>
+
+          <Button type="button" onClick={() => setIsImportModalOpen(true)}>
+            <FileUp size={16} />
+            <span>Импорт PDF</span>
           </Button>
         </div>
       </div>

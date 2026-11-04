@@ -1,9 +1,8 @@
 .container {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: 32px 24px;
-  box-shadow: var(--card-shadow);
+  border-radius: 16px;
+  padding: 32px;
   width: 100%;
   max-width: 400px;
   text-align: center;
@@ -12,21 +11,8 @@
   align-items: center;
 }
 
-.iconWrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  color: var(--text-primary);
-}
-
 .title {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -43,10 +29,6 @@
 .emailBlock {
   display: block;
   margin-top: 6px;
-  padding: 4px 10px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
   color: var(--text-primary);
   font-weight: 500;
   font-size: 13px;
@@ -58,13 +40,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.codeInput input {
-  text-align: center;
-  letter-spacing: 0.2em;
-  font-size: 16px;
-  font-weight: 600;
 }
 
 .submitBtn {

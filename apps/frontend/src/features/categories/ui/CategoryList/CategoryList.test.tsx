@@ -13,7 +13,8 @@ import {
 vi.mock('@/entities/category', () => ({
   useCategories: vi.fn(),
   useRestoreCategory: vi.fn(),
-  useDeleteCategory: vi.fn()
+  useDeleteCategory: vi.fn(),
+  CategoryIcon: () => null,
 }))
 
 describe('Компонент CategoryList', () => {

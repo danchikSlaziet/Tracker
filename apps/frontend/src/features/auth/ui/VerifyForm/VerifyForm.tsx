@@ -1,12 +1,12 @@
-import { Mail } from 'lucide-react'
-import { Button, Input } from '@finance/ui-kit'
+import { Button, OtpInput } from '@finance/ui-kit'
 import { useVerifyForm } from './useVerifyForm'
 import styles from './VerifyForm.module.css'
+import { Controller } from 'react-hook-form'
 
 export const VerifyForm = () => {
   const {
     email,
-    register,
+    control,
     handleSubmit,
     onSubmit,
     errors,
@@ -22,9 +22,6 @@ export const VerifyForm = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.iconWrapper}>
-        <Mail size={24} />
-      </div>
       <h2 className={styles.title}>Подтверждение почты</h2>
       <p className={styles.description}>
         Мы отправили 6-значный код на
@@ -32,15 +29,19 @@ export const VerifyForm = () => {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-        <Input
-          data-test-id="code-input"
-          type="text"
-          placeholder="123456"
-          maxLength={6}
-          autoComplete="one-time-code"
-          error={codeError}
-          {...register('code')}
-          className={styles.codeInput}
+        <Controller  // тк не можем повесить ref на 6 инпутов
+          name="code"
+          control={control}
+          render={({ field }) => (
+            <OtpInput
+              id="code"
+              testId="code-input"
+              value={field.value}
+              onChange={field.onChange}
+              error={codeError}
+              disabled={verifyMutation.isPending}
+            />
+          )}
         />
 
         <Button

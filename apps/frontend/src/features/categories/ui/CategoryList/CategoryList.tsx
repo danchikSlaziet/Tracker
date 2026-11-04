@@ -1,4 +1,4 @@
-import { useCategories, useDeleteCategory, useRestoreCategory } from '@/entities/category'
+import { CategoryIcon, useCategories, useDeleteCategory, useRestoreCategory } from '@/entities/category'
 import type { Category } from '@/entities/category'
 import styles from './CategoryList.module.css'
 import { useState } from 'react'
@@ -42,14 +42,15 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
           {showDeleted ? 'Удалённых категорий нет' : 'У вас пока нет категорий'}
         </div>
       ) : (
-        categories?.map((cat) => {
+        <div className={styles.rows}>
+        {categories?.map((cat) => {
           const isExpanded = expandedCatId === cat.id
 
           return (
             <div key={cat.id} data-test-id="category-item" className={styles.card}>
               <div className={styles.left}>
-                <div className={styles.icon} style={{ backgroundColor: `${cat.color}20` }}>
-                  {cat.icon}
+                <div className={styles.icon}>
+                  <CategoryIcon name={cat.icon} size={18} color={cat.color} />
                 </div>
                 <div className={styles.info}>
                   <span
@@ -67,7 +68,6 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
 
               {!showDeleted && (
                 <div className={styles.actions}>
-                  <div className={styles.colorDot} style={{ backgroundColor: cat.color }} title={`Цвет: ${cat.color}`} />
                   <button
                     className={styles.actionBtn}
                     onClick={() => onEdit(cat)}
@@ -102,7 +102,8 @@ export const CategoryList = ({ onEdit }: CategoryListProps) => {
               )}
             </div>
           )
-        })
+        })}
+        </div>
       )}
     </div>
   )

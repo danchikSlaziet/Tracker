@@ -11,8 +11,8 @@
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin: 0;
@@ -25,6 +25,6 @@
   }
 
   .title {
-    font-size: 22px;
+    font-size: 20px;
   }
 }

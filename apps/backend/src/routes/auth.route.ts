@@ -84,11 +84,11 @@ authRouter.post('/register', async (req, res): Promise<any> => {
       passwordHash,
       categories: {
         create: [
-          { name: 'Продукты', icon: '🛒', color: '#3b82f6', type: 'expense' },
-          { name: 'Транспорт', icon: '🚌', color: '#f59e0b', type: 'expense' },
-          { name: 'Зарплата', icon: '💰', color: '#10b981', type: 'income' },
-          { name: 'Развлечения', icon: '🍿', color: '#8b5cf6', type: 'expense' },
-          { name: 'Переводы', icon: '💸', color: '#ec4899', type: 'both' }
+          { name: 'Продукты', icon: 'groceries', color: '#3b82f6', type: 'expense' },
+          { name: 'Транспорт', icon: 'transport', color: '#f59e0b', type: 'expense' },
+          { name: 'Зарплата', icon: 'salary', color: '#10b981', type: 'income' },
+          { name: 'Развлечения', icon: 'entertainment', color: '#8b5cf6', type: 'expense' },
+          { name: 'Переводы', icon: 'transfers', color: '#ec4899', type: 'both' }
         ]
       }
     },
@@ -294,11 +294,11 @@ authRouter.post('/telegram', async (req, res): Promise<any> => {
           avatarUrl: telegramData.photo_url ?? null,
           categories: {
             create: [
-              { name: 'Продукты', icon: '🛒', color: '#3b82f6', type: 'expense' },
-              { name: 'Транспорт', icon: '🚌', color: '#f59e0b', type: 'expense' },
-              { name: 'Зарплата', icon: '💰', color: '#10b981', type: 'income' },
-              { name: 'Развлечения', icon: '🍿', color: '#8b5cf6', type: 'expense' },
-              { name: 'Переводы', icon: '💸', color: '#ec4899', type: 'both' }
+              { name: 'Продукты', icon: 'groceries', color: '#3b82f6', type: 'expense' },
+              { name: 'Транспорт', icon: 'transport', color: '#f59e0b', type: 'expense' },
+              { name: 'Зарплата', icon: 'salary', color: '#10b981', type: 'income' },
+              { name: 'Развлечения', icon: 'entertainment', color: '#8b5cf6', type: 'expense' },
+              { name: 'Переводы', icon: 'transfers', color: '#ec4899', type: 'both' }
             ],
           },
         },

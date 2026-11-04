@@ -5,7 +5,7 @@ import { categoryFormSchema, type CategoryFormValues } from '../../model/categor
 
 const defaultValues: CategoryFormValues = {
   name: '',
-  icon: '📦',
+  icon: 'other',
   color: '#3b82f6',
   type: 'expense',
 }

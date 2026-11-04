@@ -15,7 +15,7 @@ test.describe('Управление транзакциями', () => {
     await transactionPage.fillForm({
       type: 'expense',
       amount: '350',
-      category: '🍿 Развлечения',
+      category: 'Развлечения',
       description: transactionDescription,
     });
     await transactionPage.submit();
@@ -35,7 +35,7 @@ test.describe('Управление транзакциями', () => {
     await transactionPage.fillForm({
       type: 'expense',
       amount: '500',
-      category: '🍿 Развлечения',
+      category: 'Развлечения',
       description: 'Купил пиццу',
     });
     await transactionPage.submit();
@@ -44,7 +44,7 @@ test.describe('Управление транзакциями', () => {
     await transactionPage.fillForm({
       type: 'income',
       amount: '5000',
-      category: '💰 Зарплата',
+      category: 'Зарплата',
       description: 'Зарплата за июнь',
     });
     await transactionPage.submit();

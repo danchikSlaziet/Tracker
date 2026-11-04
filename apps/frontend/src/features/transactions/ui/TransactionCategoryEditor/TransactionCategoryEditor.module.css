@@ -6,19 +6,16 @@
 .categoryBadge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: var(--radius);
+  gap: 6px;
   font-size: 12px;
   font-weight: 500;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
   user-select: none;
 }
 
 .categoryBadge:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
+  color: var(--text-primary);
 }
 
 .arrowIcon {

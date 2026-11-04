@@ -171,7 +171,7 @@ async function execGetSpendingByCategory(
 
   return result.map((r) => ({
     category: categoryMap.get(r.categoryId)?.name ?? 'Без категории',
-    icon: categoryMap.get(r.categoryId)?.icon ?? '📁',
+    icon: categoryMap.get(r.categoryId)?.icon ?? 'uncategorized',
     total: (r._sum.amount ?? 0) / 100,
     count: r._count,
   }))
