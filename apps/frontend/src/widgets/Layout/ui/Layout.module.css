@@ -47,11 +47,20 @@
   padding: 0;
 }
 
-.logo {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
+.markLink {
+  display: flex;
+  line-height: 0;
+}
+
+.mark {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex-shrink: 0;
+}
+
+:global([data-theme='dark']) .mark {
+  filter: invert(1);
 }
 
 /* Затемнение экрана при открытии шторки */

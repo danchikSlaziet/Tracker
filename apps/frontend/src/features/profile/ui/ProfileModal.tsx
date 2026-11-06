@@ -68,7 +68,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
             onClick={handleAvatarClick}
             title="Нажмите, чтобы изменить аватар"
           >
-            <Avatar src={user.avatarUrl} email={user.email} size="lg" />
+            <Avatar src={user.avatarUrl} email={user.isDemo ? 'Демо' : user.email} size="lg" />
             <div className={styles.cameraBadge}>
               <Camera size={13} />
             </div>
@@ -98,7 +98,7 @@ export function ProfileModal({ isOpen, onClose, user }: ProfileModalProps) {
         <div className={styles.infoSection}>
           <div className={styles.infoGroup}>
             <span className={styles.infoLabel}>Email</span>
-            <span className={styles.infoValue}>{user.email}</span>
+            <span className={styles.infoValue}>{user.isDemo ? 'Демо' : user.email}</span>
           </div>
         </div>
 

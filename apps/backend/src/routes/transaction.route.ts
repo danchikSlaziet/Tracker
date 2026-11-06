@@ -5,6 +5,7 @@ import multer from 'multer'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { CATEGORY_ICONS, PaginatedResponse } from '@finance/shared-types'
 import { Prisma } from '@prisma/client'
+import { rejectDemoAi } from '../middleware/rejectDemoAi.middleware'
 
 export const transactionsRouter = Router()
 
@@ -208,7 +209,7 @@ transactionsRouter.patch('/:id', async (req, res) => {
   res.status(200).json(updatedTransaction)
 })
 
-transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
+transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (req, res) => {
 
   const io = req.app.get('io')
 

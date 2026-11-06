@@ -22,6 +22,25 @@ export async function sendAssistantMessage(
     credentials: 'include', // httpOnly cookie
     body: JSON.stringify(dto),
 
+    async onopen(response) {
+      const contentType = response.headers.get('content-type') ?? ''
+      if (response.ok && contentType.includes('text/event-stream')) {
+        return
+      }
+
+      let message = 'Ошибка соединения с ассистентом.'
+      try {
+        const data = await response.json()
+        if (typeof data?.error === 'string') {
+          message = data.error
+        }
+      } catch {
+        // тело не json
+      }
+
+      throw new Error(message)
+    },
+
     onmessage(msg) {
       try {
         const event: AssistantStreamEvent = JSON.parse(msg.data)

@@ -20,6 +20,7 @@ import jwt from 'jsonwebtoken'
 import { parseCookie } from 'cookie'
 import { assistantRouter } from './routes/assistant.route'
 import { requireVerified } from './middleware/requireVerified.middleware'
+import { rejectDemoAi } from './middleware/rejectDemoAi.middleware'
 
 // подключение к бд в 7-ой Призме
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -93,7 +94,7 @@ app.use('/api/auth', authLimiter, authRouter)
 app.use('/api/transactions', authMiddleware, apiLimiter, requireVerified, transactionsRouter)
 app.use('/api/categories', authMiddleware, apiLimiter, requireVerified, categoriesRouter)
 app.use('/api/user', authMiddleware, apiLimiter, requireVerified, userRouter)
-app.use('/api/assistant', authMiddleware, assistantLimiter, requireVerified, assistantRouter)
+app.use('/api/assistant', authMiddleware, assistantLimiter, requireVerified, rejectDemoAi, assistantRouter)
 
 
 app.use((err: Error & { status?: number }, req: express.Request, res: express.Response, _next: express.NextFunction) => {  // обработчик ошибок (на фронт безопасные данные ошибок шлем)
