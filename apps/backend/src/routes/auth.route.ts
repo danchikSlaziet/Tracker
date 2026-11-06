@@ -8,7 +8,7 @@ import { authMiddleware } from '../middleware/auth.middleware'
 import type { AuthResponse, UserDto } from '@finance/shared-types'
 import { verifyTelegramHash } from '../lib/verifyTelegramHash'
 import type { TelegramAuthData } from '@finance/shared-types'
-import { randomInt } from 'crypto'
+import { randomInt, randomUUID } from 'crypto'
 
 export const authRouter = Router()
 
@@ -98,7 +98,7 @@ authRouter.post('/register', async (req, res): Promise<any> => {
     sendVerificationEmail(user.email, otpCode)
   }
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId, isDemo: user.isDemo }
   const response: AuthResponse = { user: responseUser }
 
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || '', { expiresIn: '7d' })
@@ -147,7 +147,7 @@ authRouter.post('/login', async (req, res): Promise<any> => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   })
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId, isDemo: user.isDemo }
   const response: AuthResponse = { user: responseUser }
 
   return res.json(response)
@@ -174,14 +174,14 @@ authRouter.get('/me', authMiddleware, async (req, res): Promise<any> => {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, isVerified: true, avatarUrl: true, telegramId: true },
+    select: { id: true, email: true, isVerified: true, avatarUrl: true, telegramId: true, isDemo: true },
   })
 
   if (!user) {
     return res.status(401).json({ error: 'Пользователь не найден' })
   }
 
-  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId }
+  const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId, isDemo: user.isDemo, }
   const response: AuthResponse = { user: responseUser }
 
   return res.json(response)
@@ -228,7 +228,7 @@ authRouter.post('/verify-otp', async (req, res): Promise<any> => {
     }
   })
 
-  const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified, avatarUrl: updatedUser.avatarUrl, telegramId: updatedUser.telegramId }
+  const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified, avatarUrl: updatedUser.avatarUrl, telegramId: updatedUser.telegramId, isDemo: user.isDemo, }
   return res.json({ user: responseUser })
 })
 
@@ -319,6 +319,7 @@ authRouter.post('/telegram', async (req, res): Promise<any> => {
       isVerified: user.isVerified,
       avatarUrl: user.avatarUrl,
       telegramId: user.telegramId,
+      isDemo: user.isDemo,
     }
 
     return res.json({ user: responseUser })
@@ -326,4 +327,69 @@ authRouter.post('/telegram', async (req, res): Promise<any> => {
     console.error('Ошибка авторизации через Telegram:', error)
     return res.status(500).json({ error: 'Внутренняя ошибка сервера при авторизации' })
   }
+})
+
+authRouter.post('/demo', async (req, res): Promise<any> => {
+
+  const user = await prisma.user.create({
+    data: {
+      email: randomUUID(),
+      isDemo: true,
+      isVerified: true,
+      passwordHash: await bcrypt.hash(randomInt(0, 1_000_000_000).toString(), SALT_ROUNDS),
+      categories: {
+        create: [
+          { name: 'Продукты', icon: 'groceries', color: '#3b82f6', type: 'expense' },
+          { name: 'Транспорт', icon: 'transport', color: '#f59e0b', type: 'expense' },
+          { name: 'Зарплата', icon: 'salary', color: '#10b981', type: 'income' },
+          { name: 'Развлечения', icon: 'entertainment', color: '#8b5cf6', type: 'expense' },
+          { name: 'Переводы', icon: 'transfers', color: '#ec4899', type: 'both' },
+        ],
+      },
+    },
+    include: { categories: true },
+  })
+
+  const categoryId = (name: string) => {
+    const category = user.categories.find((item) => item.name === name)
+    if (!category) {
+      throw new Error(`Нет категории ${name}`)
+    }
+    return category.id
+  }
+  const daysAgo = (days: number) => {
+    const date = new Date()
+    date.setDate(date.getDate() - days)
+    return date
+  }
+
+  await prisma.transaction.createMany({
+    data: [
+      { userId: user.id, categoryId: categoryId('Зарплата'), type: 'income', amount: 18_600_000, description: 'Зарплата', date: daysAgo(2) },
+      { userId: user.id, categoryId: categoryId('Продукты'), type: 'expense', amount: 428_000, description: 'Пятёрочка', date: daysAgo(1) },
+      { userId: user.id, categoryId: categoryId('Транспорт'), type: 'expense', amount: 96_000, description: 'Метро', date: daysAgo(1) },
+      { userId: user.id, categoryId: categoryId('Развлечения'), type: 'expense', amount: 350_000, description: 'Кино', date: daysAgo(3) },
+      { userId: user.id, categoryId: categoryId('Переводы'), type: 'expense', amount: 1_500_000, description: 'Перевод на вклад', date: daysAgo(4) },
+      { userId: user.id, categoryId: categoryId('Продукты'), type: 'expense', amount: 215_000, description: 'Рынок', date: daysAgo(5) },
+    ],
+  })
+
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || '', { expiresIn: '7d' })
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  })
+
+  const responseUser: UserDto = {
+    id: user.id,
+    email: user.email,
+    isVerified: user.isVerified,
+    avatarUrl: user.avatarUrl,
+    telegramId: user.telegramId,
+    isDemo: user.isDemo,
+  }
+
+  return res.json({ user: responseUser })
 })

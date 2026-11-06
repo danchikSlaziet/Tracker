@@ -9,3 +9,5 @@ export const verifyOtp = (data: {email: string, code: string}) => httpClient.pos
 export const resendOtp = (data: Omit<LoginDto, 'password'>) => httpClient.post<{message: string}>('/auth/resend-otp', data).then(res => res.data)
 
 export const telegramAuthApi = (data: TelegramAuthData) => httpClient.post<AuthResponse>('/auth/telegram', data).then(res => res.data)
+
+export const demoLoginApi = () => httpClient.post<AuthResponse>('/auth/demo')

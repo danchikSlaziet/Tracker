@@ -90,7 +90,9 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
           onError: (err) => {
             const errStr = String(err || '')
             const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
-              ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+            ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+            : errStr && !errStr.includes('content-type') && !errStr.includes('Failed to fetch')
+              ? errStr
               : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
 
             set((state) => ({
@@ -108,7 +110,9 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
     } catch (err) {
       const errStr = err instanceof Error ? err.message : ''
       const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
-        ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+      ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+      : errStr && !errStr.includes('content-type') && !errStr.includes('Failed to fetch')
+        ? errStr
         : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
 
       set((state) => ({

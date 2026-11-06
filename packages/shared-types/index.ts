@@ -31,6 +31,7 @@ export interface UserDto {
   isVerified: boolean
   avatarUrl: string | null
   telegramId: string | null
+  isDemo: boolean
 }
 export interface AuthResponse {
   user: UserDto
