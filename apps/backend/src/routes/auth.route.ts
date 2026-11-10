@@ -9,6 +9,8 @@ import type { AuthResponse, UserDto } from '@finance/shared-types'
 import { verifyTelegramHash } from '../lib/verifyTelegramHash'
 import type { TelegramAuthData } from '@finance/shared-types'
 import { randomInt, randomUUID } from 'crypto'
+import path from 'path'
+import fs from 'fs/promises'
 
 export const authRouter = Router()
 
@@ -45,6 +47,30 @@ const sendVerificationEmail = async (email: string, otpCode: string) => {
 }
 
 const SALT_ROUNDS = 12
+
+
+const DEMO_TTL_MS = 7 * 24 * 60 * 60 * 1000 // кука тоже 7 дней живёт
+
+const deleteStaleDemoUsers = async () => { // удаление старых демо-юзеров
+  const cutoff = new Date(Date.now() - DEMO_TTL_MS)
+  const stale = await prisma.user.findMany({
+    where: { isDemo: true, createdAt: { lt: cutoff } },
+    select: { id: true, avatarUrl: true },
+  })
+  if (stale.length === 0) return
+
+  const ids = stale.map((user) => user.id)
+
+  await Promise.all(stale.map(async (user) => {
+    if (!user.avatarUrl?.startsWith('/api/uploads/')) return
+    const filePath = path.join(process.cwd(), 'uploads', path.basename(user.avatarUrl))
+    await fs.unlink(filePath).catch(() => { })
+  }))
+
+  await prisma.transaction.deleteMany({ where: { userId: { in: ids } } })
+  await prisma.category.deleteMany({ where: { userId: { in: ids } } })
+  await prisma.user.deleteMany({ where: { id: { in: ids } } })
+}
 
 authRouter.post('/register', async (req, res): Promise<any> => {
   // Валидируем тело запроса
@@ -336,7 +362,9 @@ authRouter.post('/telegram', async (req, res): Promise<any> => {
 })
 
 authRouter.post('/demo', async (req, res): Promise<any> => {
-
+  await deleteStaleDemoUsers().catch((error) => {
+    console.error('Не удалось удалить старых демо-пользователей:', error)
+  })
   const user = await prisma.user.create({
     data: {
       email: randomUUID(),
