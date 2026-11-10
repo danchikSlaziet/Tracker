@@ -22,6 +22,18 @@ import { assistantRouter } from './routes/assistant.route'
 import { requireVerified } from './middleware/requireVerified.middleware'
 import { rejectDemoAi } from './middleware/rejectDemoAi.middleware'
 
+const jwtSecret = process.env.JWT_SECRET?.trim()
+
+if (!jwtSecret) {
+  console.error('Не задан JWT_SECRET')
+  process.exit(1)
+}
+
+if (process.env.NODE_ENV === 'production' && jwtSecret.length < 32) {
+  console.error('JWT_SECRET короче 32 символов')
+  process.exit(1)
+}
+
 // подключение к бд в 7-ой Призме
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)

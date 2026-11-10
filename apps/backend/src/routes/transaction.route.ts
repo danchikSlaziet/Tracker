@@ -231,6 +231,12 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
       res.status(400).json({ error: 'Файл не загружен' })
       return
     }
+    const { fileTypeFromBuffer } = await import('file-type')
+    const detected = await fileTypeFromBuffer(req.file.buffer)
+    if (detected?.mime !== 'application/pdf') {
+      res.status(400).json({ error: 'Файл не является PDF' })
+      return
+    }
 
     if (!process.env.GEMINI_API_KEY) {
       res.status(500).json({ error: 'Gemini API key отсутствует :(' })
@@ -289,7 +295,7 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
     const pdfPart = {
       inlineData: {
         data: req.file.buffer.toString('base64'),
-        mimeType: req.file.mimetype
+        mimeType: 'application/pdf',
       }
     }
 
