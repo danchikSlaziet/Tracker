@@ -264,6 +264,12 @@ authRouter.post('/resend-otp', async (req, res): Promise<any> => {
 
 authRouter.post('/telegram', async (req, res): Promise<any> => {
 
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim()
+
+  if (!botToken) {
+    return res.status(503).json({ error: 'Вход через Telegram не настроен' })
+  }
+
   const parsed = telegramAuthSchema.safeParse(req.body)
   if (!parsed.success) {
     return res.status(400).json({ error: 'Некорректные данные от Telegram' })
@@ -271,7 +277,7 @@ authRouter.post('/telegram', async (req, res): Promise<any> => {
 
   const telegramData = parsed.data as TelegramAuthData
 
-  if (!verifyTelegramHash(telegramData, process.env.TELEGRAM_BOT_TOKEN || '')) {
+  if (!verifyTelegramHash(telegramData, botToken || '')) {
     return res.status(401).json({ error: 'Невалидная подпись данных Telegram' })
   }
 
