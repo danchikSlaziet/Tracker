@@ -319,6 +319,75 @@ const TOOL_LABELS: Record<string, string> = {
   get_recent_transactions: 'Ищу нужные операции...',
 }
 
+const TOOL_MARKUP = [
+  { open: '<tool_call>', close: '</tool_call>' },
+  { open: '<function=', close: '</function>' },
+  { open: '[tool_call]', close: '[/tool_call]' },
+]
+
+const stripToolMarkup = (text: string) =>
+  text
+    .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
+    .replace(/<function=[\s\S]*?<\/function>/gi, '')
+    .replace(/\[TOOL_CALL\][\s\S]*?\[\/TOOL_CALL\]/gi, '')
+
+// Готовый тег вырезаем. Хвост, похожий на начало тега, держим до следующего куска.
+const splitSafeText = (text: string) => {
+  const cleaned = stripToolMarkup(text)
+  const lower = cleaned.toLowerCase()
+  let cut = cleaned.length
+
+  for (const tag of TOOL_MARKUP) {
+    const openAt = lower.lastIndexOf(tag.open)
+    if (openAt !== -1 && lower.indexOf(tag.close, openAt + tag.open.length) === -1) {
+      cut = Math.min(cut, openAt)
+    }
+
+    const max = Math.min(tag.open.length - 1, lower.length)
+    for (let size = max; size > 0; size--) {
+      if (tag.open.startsWith(lower.slice(-size))) {
+        cut = Math.min(cut, cleaned.length - size)
+        break
+      }
+    }
+  }
+
+  return { safe: cleaned.slice(0, cut), rest: cleaned.slice(cut) }
+}
+
+const createStreamSanitizer = (onText: (text: string) => void) => {
+  let pending = ''
+  let sent = false
+
+  const emit = (text: string) => {
+    if (!text) return
+    onText(text)
+    sent = true
+  }
+
+  return {
+    push(delta: string) {
+      pending += delta
+      const { safe, rest } = splitSafeText(pending)
+      if (rest) {
+        pending = rest
+        emit(sent ? safe : safe.trimStart())
+        return
+      }
+
+      const trailing = safe.match(/\s+$/)?.[0] ?? ''
+      pending = trailing
+      const body = safe.slice(0, safe.length - trailing.length)
+      emit(sent ? body : body.trimStart())
+    },
+    finish() {
+      const cleaned = stripToolMarkup(pending)
+      pending = ''
+      emit(sent ? cleaned.trimEnd() : cleaned.trim())
+    },
+  }
+}
+
 const chatMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string().min(1),
@@ -367,51 +436,70 @@ assistantRouter.post('/chat', async (req, res): Promise<any> => {
     while (maxSteps > 0) {
       maxSteps--
 
-      const response = await groq.chat.completions.create({
+      const stream = await groq.chat.completions.create({
         model: MODEL,
         messages,
         tools,
         tool_choice: 'auto',
+        stream: true,
       })
 
-      const choice = response.choices[0]
+      let content = ''
+      const toolCalls = new Map<number, { id: string; name: string; arguments: string }>()
+      const sanitizer = createStreamSanitizer((text) => {
+        sendEvent({ type: 'chunk', text })
+      })
 
-      // вызов тулза
-      if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
-        messages.push(choice.message)
+      for await (const part of stream) {
+        const delta = part.choices[0]?.delta
+        if (!delta) continue
 
-        for (const toolCall of choice.message.tool_calls) {
-          const toolLabel = TOOL_LABELS[toolCall.function.name] || 'Запрашиваю данные из базы...'
-          sendEvent({ type: 'tool_calling', tool: toolLabel })
-
-          let toolArgs = {}
-          try {
-            toolArgs = JSON.parse(toolCall.function.arguments || '{}')
-          } catch {
-            toolArgs = {}
-          }
-
-          const toolResult = await executeTool(userId, toolCall.function.name, toolArgs)
-
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(toolResult),
-          })
+        for (const call of delta.tool_calls ?? []) {
+          const current = toolCalls.get(call.index) ?? { id: '', name: '', arguments: '' }
+          if (call.id) current.id += call.id
+          if (call.function?.name) current.name += call.function.name
+          if (call.function?.arguments) current.arguments += call.function.arguments
+          toolCalls.set(call.index, current)
         }
-      } else {
-        // убираем любые случайные теги и разметку
-        let text = choice.message.content || ''
-        text = text
-          .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
-          .replace(/<function=[\s\S]*?<\/function>/gi, '')
-          .replace(/\[TOOL_CALL\][\s\S]*?\[\/TOOL_CALL\]/gi, '')
-          .trim()
 
-        if (text) {
-          sendEvent({ type: 'chunk', text })
-        }
+        if (!delta.content) continue
+        content += delta.content
+        if (toolCalls.size === 0) sanitizer.push(delta.content)
+      }
+
+      if (toolCalls.size === 0) {
+        sanitizer.finish()
         break
+      }
+
+      const calls = [...toolCalls.values()]
+      messages.push({
+        role: 'assistant',
+        content: content || null,
+        tool_calls: calls.map((call) => ({
+          id: call.id,
+          type: 'function',
+          function: { name: call.name, arguments: call.arguments },
+        })),
+      })
+
+      for (const call of calls) {
+        const toolLabel = TOOL_LABELS[call.name] || 'Запрашиваю данные из базы...'
+        sendEvent({ type: 'tool_calling', tool: toolLabel })
+
+        let toolArgs = {}
+        try {
+          toolArgs = JSON.parse(call.arguments || '{}')
+        } catch {
+          toolArgs = {}
+        }
+
+        const toolResult = await executeTool(userId, call.name, toolArgs)
+        messages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: JSON.stringify(toolResult),
+        })
       }
     }
 
