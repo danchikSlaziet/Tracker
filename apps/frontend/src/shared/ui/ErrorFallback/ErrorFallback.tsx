@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react'
 import styles from './ErrorFallback.module.css'
 
 export function ErrorFallback() {
@@ -8,7 +9,9 @@ export function ErrorFallback() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <div className={styles.icon}>⚠️</div>
+        <div className={styles.icon}>
+          <AlertTriangle size={40} />
+        </div>
         <h2 className={styles.title}>Что-то пошло не так</h2>
         <p className={styles.description}>
           Произошла непредвиденная ошибка. Мы уже работаем над её устранением.

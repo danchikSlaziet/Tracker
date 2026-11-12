@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { renderWithProviders } from '@/shared/lib/test-utils'
+import { createApiError, renderWithProviders } from '@/shared/lib/test-utils'
 import { LoginForm } from './LoginForm'
 import { ROUTES } from '@/shared/config'
 import { useLogin } from '../../api/useLogin'
@@ -71,9 +71,7 @@ describe('Компонент LoginForm', () => {
 
     const mockMutateWithError = vi.fn().mockImplementation((_data, options) => {
       if (options?.onError) {
-        options.onError({
-          response: { data: { error: "Неверный email или пароль" } }
-        })
+        options.onError(createApiError('Неверный email или пароль', 401))
       }
     })
 

@@ -15,7 +15,7 @@ describe('Компонент CategoryForm', () => {
   it('рендерит форму редактирования с начальными данными', () => {
     const initialData = {
       name: 'Продукты',
-      icon: '🍎',
+      icon: 'groceries',
       color: '#ff0000',
       type: 'expense' as const
     }
@@ -24,7 +24,7 @@ describe('Компонент CategoryForm', () => {
 
     expect(screen.getByRole('heading', { name: 'Редактировать категорию' })).toBeInTheDocument()
     expect(screen.getByLabelText('Название')).toHaveValue('Продукты')
-    expect(screen.getByLabelText('Иконка')).toHaveValue('🍎')
+    expect(screen.getByRole('button', { name: 'groceries', pressed: true })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Расход' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Сохранить' })).toBeInTheDocument()
   })
@@ -39,21 +39,6 @@ describe('Компонент CategoryForm', () => {
     await user.click(submitBtn)
 
     expect(await screen.findByText('Название обязательно')).toBeInTheDocument()
-    expect(handleSubmit).not.toHaveBeenCalled()
-  })
-
-  it('показывает ошибку, если удалить дефолтную иконку и отправить форму', async () => {
-    const user = userEvent.setup()
-    const handleSubmit = vi.fn()
-
-    render(<CategoryForm onSubmit={handleSubmit} />)
-
-    const submitBtn = screen.getByRole('button', { name: 'Создать' });
-    const iconInput = screen.getByLabelText('Иконка')
-    await user.clear(iconInput)
-    await user.click(submitBtn)
-
-    expect(await screen.findByText('Иконка обязательна')).toBeInTheDocument()
     expect(handleSubmit).not.toHaveBeenCalled()
   })
 
@@ -78,7 +63,7 @@ describe('Компонент CategoryForm', () => {
     expect(handleSubmit).toHaveBeenCalledTimes(1)
     expect(handleSubmit).toHaveBeenCalledWith({
       name: 'Зарплата',
-      icon: '📦', // дефолтное значение
+      icon: 'other', // дефолтное значение
       color: '#3b82f6', // дефолтный цвет
       type: 'income'
     },

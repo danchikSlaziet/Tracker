@@ -7,7 +7,7 @@ export const TransactionsPage = () => {
     <div className={styles.page}>
       <PageMeta title="Транзакции" description="История доходов и расходов с фильтрацией и поиском" />
       <header className={styles.header}>
-        <h1>Мои транзакции</h1>
+        <h1>Транзакции</h1>
       </header>
       <TransactionWidget />
     </div>

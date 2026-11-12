@@ -6,6 +6,7 @@ import { useImportProgress } from '../../model/useImportProgress'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@/shared/config'
 import { FileText, CheckCircle2, X } from 'lucide-react'
+import { getApiErrorMessage } from '@/shared/api'
 
 const stageLabels: Record<string, string> = {
   reading_file: 'Читаем файл и категории...',
@@ -101,8 +102,7 @@ export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportT
   }
 
   const getErrorMessage = () => {
-    if (!error) return null
-    return (error as any)?.response?.data?.error || error.message || 'Произошла ошибка при импорте'
+    return getApiErrorMessage(error, 'Произошла ошибка при импорте')
   }
 
   return (
@@ -172,13 +172,9 @@ export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportT
           </div>
         ) : (
           <div className={styles.uploadPrompt}>
-            <div className={styles.uploadIcon}>
-              <FileText size={32} />
-            </div>
-            <p className={styles.primaryText}>
-              Перетащите выписку сюда или <strong>нажмите для выбора</strong>
-            </p>
-            <p className={styles.secondaryText}>Поддерживаются только PDF-файлы до 10 МБ</p>
+            <FileText size={34} strokeWidth={1.5} />
+            <p className={styles.primaryText}>Перетащите PDF-выписку</p>
+            <p className={styles.secondaryText}>или нажмите, чтобы выбрать файл до 10 МБ</p>
           </div>
         )}
       </div>

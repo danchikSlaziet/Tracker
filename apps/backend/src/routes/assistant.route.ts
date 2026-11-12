@@ -2,6 +2,7 @@ import { Router } from 'express'
 import Groq from 'groq-sdk'
 import { prisma } from '../index'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 
 export const assistantRouter = Router()
 
@@ -99,7 +100,7 @@ const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
 
 // Исполнители тулзов
 async function execGetSummary(userId: string, args: { dateFrom?: string; dateTo?: string }) {
-  const where: any = { userId }
+  const where: Prisma.TransactionWhereInput = { userId }
   const from = parseSafeDate(args.dateFrom)
   const to = parseSafeDate(args.dateTo)
 
@@ -138,8 +139,9 @@ async function execGetSpendingByCategory(
   userId: string,
   args: { dateFrom?: string; dateTo?: string; type?: string }
 ) {
+
   const normalizedType = args.type?.toLowerCase().startsWith('inc') ? 'income' : 'expense'
-  const where: any = { userId, type: normalizedType }
+  const where: Prisma.TransactionWhereInput = { userId, type: normalizedType }
 
   const from = parseSafeDate(args.dateFrom)
   const to = parseSafeDate(args.dateTo)
@@ -169,7 +171,7 @@ async function execGetSpendingByCategory(
 
   return result.map((r) => ({
     category: categoryMap.get(r.categoryId)?.name ?? 'Без категории',
-    icon: categoryMap.get(r.categoryId)?.icon ?? '📁',
+    icon: categoryMap.get(r.categoryId)?.icon ?? 'uncategorized',
     total: (r._sum.amount ?? 0) / 100,
     count: r._count,
   }))
@@ -198,7 +200,7 @@ async function execGetRecentTransactions(
   userId: string,
   args: { limit?: number | string; type?: string; categoryId?: string }
 ) {
-  const where: any = { userId }
+  const where: Prisma.TransactionWhereInput = { userId }
 
   if (args.type) {
     where.type = args.type.toLowerCase().startsWith('inc') ? 'income' : 'expense'
@@ -229,25 +231,60 @@ async function execGetRecentTransactions(
   }))
 }
 
+const summaryArgsSchema = z.object({
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+})
+const spendingArgsSchema = z.object({
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  type: z.enum(['income', 'expense', 'incomes', 'expenses']),
+})
+const trendArgsSchema = z.object({
+  months: z.union([z.number(), z.string()]).optional(),
+})
+const recentArgsSchema = z.object({
+  limit: z.union([z.number(), z.string()]).optional(),
+  type: z.enum(['income', 'expense', 'incomes', 'expenses']).optional(),
+  categoryId: z.string().optional(),
+})
+
 // self-Correction loop при сбоях в базе
-async function executeTool(userId: string, name: string, args: any) {
+async function executeTool(userId: string, name: string, args: unknown) {
   try {
     switch (name) {
-      case 'get_summary':
-        return await execGetSummary(userId, args)
-      case 'get_spending_by_category':
-        return await execGetSpendingByCategory(userId, args)
-      case 'get_monthly_trend':
-        return await execGetMonthlyTrend(userId, args)
-      case 'get_recent_transactions':
-        return await execGetRecentTransactions(userId, args)
+      case 'get_summary': {
+        const parsed = summaryArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetSummary(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_summary' }
+      }
+      case 'get_spending_by_category': {
+        const parsed = spendingArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetSpendingByCategory(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_spending_by_category' }
+      }
+      case 'get_monthly_trend': {
+        const parsed = trendArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetMonthlyTrend(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_monthly_trend' }
+      }
+      case 'get_recent_transactions': {
+        const parsed = recentArgsSchema.safeParse(args)
+        return parsed.success
+          ? await execGetRecentTransactions(userId, parsed.data)
+          : { error: 'Некорректные аргументы get_recent_transactions' }
+      }
       default:
         return { error: `Неизвестная функция: ${name}` }
     }
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
     console.error(`Ошибка выполнения тулза ${name}:`, error)
     return {
-      error: `Не удалось получить данные: ${error.message || 'Ошибка базы данных'}. Попробуй переформулировать запрос или запросить данные без фильтра.`,
+      error: `Не удалось получить данные: ${message || 'Ошибка базы данных'}. Попробуй переформулировать запрос или запросить данные без фильтра.`,
     }
   }
 }
@@ -280,6 +317,75 @@ const TOOL_LABELS: Record<string, string> = {
   get_spending_by_category: 'Анализирую расходы по категориям...',
   get_monthly_trend: 'Сравниваю динамику по месяцам...',
   get_recent_transactions: 'Ищу нужные операции...',
+}
+
+const TOOL_MARKUP = [
+  { open: '<tool_call>', close: '</tool_call>' },
+  { open: '<function=', close: '</function>' },
+  { open: '[tool_call]', close: '[/tool_call]' },
+]
+
+const stripToolMarkup = (text: string) =>
+  text
+    .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
+    .replace(/<function=[\s\S]*?<\/function>/gi, '')
+    .replace(/\[TOOL_CALL\][\s\S]*?\[\/TOOL_CALL\]/gi, '')
+
+// Готовый тег вырезаем. Хвост, похожий на начало тега, держим до следующего куска.
+const splitSafeText = (text: string) => {
+  const cleaned = stripToolMarkup(text)
+  const lower = cleaned.toLowerCase()
+  let cut = cleaned.length
+
+  for (const tag of TOOL_MARKUP) {
+    const openAt = lower.lastIndexOf(tag.open)
+    if (openAt !== -1 && lower.indexOf(tag.close, openAt + tag.open.length) === -1) {
+      cut = Math.min(cut, openAt)
+    }
+
+    const max = Math.min(tag.open.length - 1, lower.length)
+    for (let size = max; size > 0; size--) {
+      if (tag.open.startsWith(lower.slice(-size))) {
+        cut = Math.min(cut, cleaned.length - size)
+        break
+      }
+    }
+  }
+
+  return { safe: cleaned.slice(0, cut), rest: cleaned.slice(cut) }
+}
+
+const createStreamSanitizer = (onText: (text: string) => void) => {
+  let pending = ''
+  let sent = false
+
+  const emit = (text: string) => {
+    if (!text) return
+    onText(text)
+    sent = true
+  }
+
+  return {
+    push(delta: string) {
+      pending += delta
+      const { safe, rest } = splitSafeText(pending)
+      if (rest) {
+        pending = rest
+        emit(sent ? safe : safe.trimStart())
+        return
+      }
+
+      const trailing = safe.match(/\s+$/)?.[0] ?? ''
+      pending = trailing
+      const body = safe.slice(0, safe.length - trailing.length)
+      emit(sent ? body : body.trimStart())
+    },
+    finish() {
+      const cleaned = stripToolMarkup(pending)
+      pending = ''
+      emit(sent ? cleaned.trimEnd() : cleaned.trim())
+    },
+  }
 }
 
 const chatMessageSchema = z.object({
@@ -330,59 +436,79 @@ assistantRouter.post('/chat', async (req, res): Promise<any> => {
     while (maxSteps > 0) {
       maxSteps--
 
-      const response = await groq.chat.completions.create({
+      const stream = await groq.chat.completions.create({
         model: MODEL,
         messages,
         tools,
         tool_choice: 'auto',
+        stream: true,
       })
 
-      const choice = response.choices[0]
+      let content = ''
+      const toolCalls = new Map<number, { id: string; name: string; arguments: string }>()
+      const sanitizer = createStreamSanitizer((text) => {
+        sendEvent({ type: 'chunk', text })
+      })
 
-      // вызов тулза
-      if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls) {
-        messages.push(choice.message)
+      for await (const part of stream) {
+        const delta = part.choices[0]?.delta
+        if (!delta) continue
 
-        for (const toolCall of choice.message.tool_calls) {
-          const toolLabel = TOOL_LABELS[toolCall.function.name] || 'Запрашиваю данные из базы...'
-          sendEvent({ type: 'tool_calling', tool: toolLabel })
-
-          let toolArgs = {}
-          try {
-            toolArgs = JSON.parse(toolCall.function.arguments || '{}')
-          } catch {
-            toolArgs = {}
-          }
-
-          const toolResult = await executeTool(userId, toolCall.function.name, toolArgs)
-
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(toolResult),
-          })
+        for (const call of delta.tool_calls ?? []) {
+          const current = toolCalls.get(call.index) ?? { id: '', name: '', arguments: '' }
+          if (call.id) current.id += call.id
+          if (call.function?.name) current.name += call.function.name
+          if (call.function?.arguments) current.arguments += call.function.arguments
+          toolCalls.set(call.index, current)
         }
-      } else {
-        // убираем любые случайные теги и разметку
-        let text = choice.message.content || ''
-        text = text
-          .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
-          .replace(/<function=[\s\S]*?<\/function>/gi, '')
-          .replace(/\[TOOL_CALL\][\s\S]*?\[\/TOOL_CALL\]/gi, '')
-          .trim()
 
-        if (text) {
-          sendEvent({ type: 'chunk', text })
-        }
+        if (!delta.content) continue
+        content += delta.content
+        if (toolCalls.size === 0) sanitizer.push(delta.content)
+      }
+
+      if (toolCalls.size === 0) {
+        sanitizer.finish()
         break
+      }
+
+      const calls = [...toolCalls.values()]
+      messages.push({
+        role: 'assistant',
+        content: content || null,
+        tool_calls: calls.map((call) => ({
+          id: call.id,
+          type: 'function',
+          function: { name: call.name, arguments: call.arguments },
+        })),
+      })
+
+      for (const call of calls) {
+        const toolLabel = TOOL_LABELS[call.name] || 'Запрашиваю данные из базы...'
+        sendEvent({ type: 'tool_calling', tool: toolLabel })
+
+        let toolArgs = {}
+        try {
+          toolArgs = JSON.parse(call.arguments || '{}')
+        } catch {
+          toolArgs = {}
+        }
+
+        const toolResult = await executeTool(userId, call.name, toolArgs)
+        messages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: JSON.stringify(toolResult),
+        })
       }
     }
 
     sendEvent({ type: 'done' })
     res.end()
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
     console.error('Ошибка в работе AI-ассистента:', error)
-    sendEvent({ type: 'error', text: error.message || 'Ошибка генерации ответа' })
+    sendEvent({ type: 'error', text: message || 'Ошибка генерации ответа' })
     res.end()
   }
 })

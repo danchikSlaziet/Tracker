@@ -114,7 +114,7 @@ export function AssistantChat() {
           disabled={isLoading || !inputText.trim()}
           title="Отправить"
         >
-          {isLoading ? <Loader2 size={18} /> : <Send size={18} />}
+          {isLoading ? <Loader2 size={18} className={styles.spin} /> : <Send size={18} />}
         </Button>
       </form>
     </div>

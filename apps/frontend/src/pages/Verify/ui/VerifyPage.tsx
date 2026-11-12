@@ -8,6 +8,7 @@ export const VerifyPage = () => {
     <main className={styles.pageWrapper}>
       <PageMeta title="Подтверждение почты" description="Подтверждение email адреса аккаунта" />
       <ThemeSwitcher className={styles.themeBtn} />
+      <img className={styles.mark} src="/favicon.svg" alt="Finance" width={40} height={40} />
       <VerifyForm />
     </main>
   )

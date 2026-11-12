@@ -7,6 +7,7 @@
   background: var(--bg-primary, #ffffff);
   color: var(--text-primary, #1e293b);
 }
+
 .messagesList {
   flex: 1;
   min-height: 0;
@@ -43,8 +44,8 @@
 }
 
 .botAvatar {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  color: #ffffff;
+  background: var(--accent-primary);
+  color: var(--accent-text);
 }
 
 .bubble {
@@ -57,8 +58,8 @@
 }
 
 .user .bubble {
-  background: var(--color-primary, #6366f1);
-  color: #ffffff;
+  background: var(--accent-primary);
+  color: var(--accent-text);
   border-bottom-right-radius: 4px;
 }
 
@@ -74,8 +75,9 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
@@ -117,8 +119,8 @@
 }
 
 .suggestionChip:hover {
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: var(--text-primary);
+  color: var(--text-primary);
 }
 
 .inputForm {
@@ -142,26 +144,7 @@
 }
 
 .input:focus {
-  border-color: #6366f1;
-}
-
-.sendBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #6366f1;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.sendBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  border-color: var(--text-primary);
 }
 
 .markdownContent p {
@@ -184,4 +167,12 @@
 
 .markdownContent strong {
   font-weight: 600;
+}
+
+.spin {
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

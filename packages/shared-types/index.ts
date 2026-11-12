@@ -1,3 +1,7 @@
+export interface ApiErrorResponse {
+  error: string
+}
+
 export interface Category {
   id: string
   name: string
@@ -27,6 +31,7 @@ export interface UserDto {
   isVerified: boolean
   avatarUrl: string | null
   telegramId: string | null
+  isDemo: boolean
 }
 export interface AuthResponse {
   user: UserDto
@@ -74,3 +79,38 @@ export interface AssistantChatDto {
   message: string
   history?: Array<{ role: 'user' | 'assistant'; content: string }>
 }
+
+export const CATEGORY_ICONS = [
+  'groceries',      // ShoppingCart
+  'transport',      // Bus
+  'salary',         // Wallet
+  'entertainment',  // Popcorn
+  'transfers',      // ArrowLeftRight
+  'uncategorized',  // Folder
+  'other',          // Package
+  'food',           // Utensils
+  'coffee',         // Coffee
+  'car',            // Car
+  'fuel',           // Fuel
+  'home',           // Home
+  'rent',           // Key
+  'utilities',      // Zap
+  'health',         // HeartPulse
+  'pharmacy',       // Pill
+  'gifts',          // Gift
+  'travel',         // Plane
+  'clothes',        // Shirt
+  'tech',           // Smartphone
+  'education',      // GraduationCap
+  'sport',          // Dumbbell
+  'pets',           // PawPrint
+  'kids',           // Baby
+  'subscriptions',  // Repeat
+  'taxes',          // Landmark
+  'savings',        // PiggyBank
+  'freelance',      // Briefcase
+  'beauty',         // Sparkles
+  'music',          // Music
+] as const
+
+export type CategoryIconName = (typeof CATEGORY_ICONS)[number]

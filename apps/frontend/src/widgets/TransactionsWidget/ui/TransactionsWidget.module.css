@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 28px;
   width: 100%;
 }
 
@@ -46,7 +46,7 @@
   font-weight: 600;
 }
 
-.importBtn {
+.secondaryBtn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -61,7 +61,7 @@
   transition: all 0.15s ease;
 }
 
-.importBtn:hover {
+.secondaryBtn:hover {
   background: var(--bg-primary);
   border-color: var(--text-secondary);
 }
@@ -105,8 +105,7 @@
     width: 100%;
   }
 
-  .importBtn,
-  .createBtn {
+  .rightActions button {
     width: 100%;
     justify-content: center;
     padding: 8px 6px;

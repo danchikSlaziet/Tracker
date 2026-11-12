@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.css'
 import { useLogout, useMe } from '@/features/auth'
 import { ROUTES } from '@/shared/config'
@@ -34,7 +34,12 @@ export function Layout() {
     setIsMobileOpen(false)
   }
 
-  const { setIsOpen: setIsAssistantOpen } = useAssistantStore()
+  const setIsAssistantOpen = useAssistantStore((state) => state.setIsOpen)
+  const resetAssistant = useAssistantStore((state) => state.reset)
+  const handleLogout = () => {
+    resetAssistant()
+    logout()
+  }
 
 
   return (
@@ -48,13 +53,12 @@ export function Layout() {
         >
           {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <div className={styles.logo}>Finance</div>
         <div className={styles.mobileHeaderRight}>
           <ThemeSwitcher />
           {user && (
-            <div className={styles.mobileAvatar} onClick={() => setIsProfileOpen(true)}>
-              <Avatar src={user.avatarUrl} email={user.email} size="sm" />
-            </div>
+            <button aria-label="Открыть профиль" type='button' className={styles.mobileAvatar} onClick={() => setIsProfileOpen(true)}>
+              <Avatar src={user.avatarUrl} email={user.isDemo ? 'Демо' : user.email} size="sm" />
+            </button>
           )}
         </div>
       </header>
@@ -76,7 +80,11 @@ export function Layout() {
         `}
       >
         <div className={styles.sidebarHeader}>
-          {!isCollapsed && <div className={styles.logo}>Finance</div>}
+          {!isCollapsed && (
+            <Link to={ROUTES.HOME} className={styles.markLink} onClick={handleNavClick} aria-label="На главную">
+              <img className={styles.mark} src="/favicon.svg" alt="" width={24} height={24} />
+            </Link>
+          )}
           <button
             className={styles.collapseBtn}
             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -126,15 +134,14 @@ export function Layout() {
               setIsAssistantOpen(true)
               handleNavClick()
             }}
-            className={styles.navLink}
+            className={`${styles.navLink} ${styles.assistantLink}`}
             title="AI Ассистент"
-            style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
           >
-            <span className={styles.navIcon} style={{ color: '#8b5cf6' }}>
+            <span className={`${styles.navIcon} ${styles.assistantAccent}`}>
               <Sparkles size={18} />
             </span>
             {!isCollapsed && (
-              <span className={styles.navText} style={{ fontWeight: 600, color: '#8b5cf6' }}>
+              <span className={`${styles.navText} ${styles.assistantAccent}`}>
                 AI Ассистент
               </span>
             )}
@@ -147,23 +154,25 @@ export function Layout() {
           </div>
 
           {user && (
-            <div
+            <button
+              type='button'
+              aria-label="Открыть профиль"
               className={styles.profileBlock}
               onClick={() => {
                 setIsProfileOpen(true)
                 setIsMobileOpen(false)
               }}
-              title={user.email}
+              title={user.isDemo ? 'Демо' : user.email}
             >
-              <Avatar src={user.avatarUrl} email={user.email} size="sm" />
+              <Avatar src={user.avatarUrl} email={user.isDemo ? 'Демо' : user.email} size="sm" />
               {!isCollapsed && (
-                <span className={styles.profileEmail}>{user.email}</span>
+                <span className={styles.profileEmail}>{user.isDemo ? 'Демо' : user.email}</span>
               )}
-            </div>
+            </button>
           )}
 
           <button
-            onClick={() => logout()}
+            onClick={handleLogout}
             disabled={isPending}
             className={styles.logoutBtn}
             title="Выйти"

@@ -1,10 +1,9 @@
-import { Locator, Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 
 export class CategoriesPage {
   private readonly page: Page;
 
   readonly nameInput: Locator;
-  readonly iconInput: Locator;
   readonly submitButton: Locator;
   readonly openCreateBtn: Locator;
 
@@ -13,7 +12,6 @@ export class CategoriesPage {
     this.page = page;
     this.openCreateBtn = page.getByTestId('open-create-category-btn');
     this.nameInput = page.locator('[data-test-id="category-name-input"]:visible');
-    this.iconInput = page.locator('[data-test-id="category-icon-input"]:visible');
     this.submitButton = page.locator('[data-test-id="category-submit-btn"]:visible');
   }
 
@@ -28,11 +26,10 @@ export class CategoriesPage {
     }
   }
 
-  async createCategory(name: string, icon = '🍔') {
+  async createCategory(name: string) {
     await this.openCreateForm();
     await this.nameInput.waitFor({ state: 'visible' });
     await this.nameInput.fill(name);
-    await this.iconInput.fill(icon);
     await this.submitButton.click();
     await this.getCategoryCard(name).waitFor({ state: 'visible' });
   }

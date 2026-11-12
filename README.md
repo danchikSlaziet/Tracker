@@ -1,165 +1,151 @@
 # Finance Tracker
 
-Full-stack монорепозиторий для учёта личных финансов. Проект разработан с использованием архитектурного подхода Feature-Sliced Design (FSD), типом-безопасными контрактами между клиентом и сервером и полным циклом автоматизированного тестирования.
+[![CI](https://github.com/danchikSlaziet/Tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/danchikSlaziet/Tracker/actions/workflows/ci.yml)
 
-## Основной функционал
+Учёт личных доходов и расходов. Фронтенд, бэкенд и общие типы лежат в одном репозитории.
 
-### Аутентификация и безопасность
-- **Аутентификация**: Вход по Email с обязательным подтверждением через 6-значный OTP-код (интеграция с Resend).
-- **Авторизация через Telegram**: Вход в 1 клик с помощью Telegram Login Widget и серверной верификацией подписи HMAC-SHA256.
-- **Безопасность токенов**: Хранение JWT исключительно в `httpOnly` и `sameSite` куках.
-- **Защита бэкенда**: Хеширование паролей с помощью bcrypt (12 раундов), использование Helmet (Security Headers), строго настроенный CORS и Rate Limiting для чувствительных роутов.
+Рабочий стенд: [finance67.ru](https://finance67.ru)
 
-### ИИ-анализ, Агенты и WebSockets
-- **AI Финансовый ассистент (Agentic Loop & Function Calling)**: Интерактивный диалоговый ассистент на базе модели Qwen 2.5 / Groq API. Самостоятельно выбирает и вызывает инструменты (Tool Use) для выборки баланса, категорий, трендов и истории операций из PostgreSQL без выгрузки сырых данных в промпт.
-- **Потоковая передача (SSE Streaming)**: Посимвольная генерация ответов в реальном времени с отображением текущего статуса выполнения инструментов.
-- **Парсинг выписок**: Автоматический разбор банковских PDF-выписок (Т-Банк, Сбербанк, Альфа-Банк) с использованием Google Gemini Flash API и структурированного вывода в JSON.
-- **Real-time уведомления**: Трансляция текущего статуса обработки PDF-выписки на клиент через WebSockets (Socket.io) без необходимости опрашивать сервер.
+## Что есть в приложении
 
-### Финансы и аналитика
-- **Управление операциями**: Создание, редактирование, мягкое удаление (soft delete) и фильтрация доходов и расходов.
-- **Управление категориями**: Настройка пользовательских категорий с выбором иконок, цвета и привязки к типам операций.
-- **Интерактивный поиск**: Фильтрация списка транзакций с задержкой ввода (debounce 400ms).
-- **Визуализация**: Аналитические диаграммы распределения расходов по категориям (Recharts).
-- **Оптимистичный UI**: Мгновенный отклик интерфейса при операциях благодаря TanStack Query.
+Регистрация по почте с шестизначным кодом через Resend. На экране входа есть демо: каждый заход создаёт своего пользователя с примерными операциями. Ассистент и импорт PDF в демо отвечают 403.
 
----
+Вход через Telegram на бэкенде есть, кнопка в интерфейсе убрана.
 
-## Архитектура и структура монорепозитория
+Сессия хранится в httpOnly-куке. Пароли хешируются bcrypt, на API стоят Helmet и лимиты запросов.
 
-Проект организован с использованием **npm workspaces**:
+Операции можно добавить, изменить, удалить и отфильтровать. Удаление операции стирает строку. У категории мягкое удаление: строка остаётся с `isDeleted`. Список операций догружается при прокрутке. Поиск ждёт паузу во вводе. Расходы по категориям показаны диаграммой.
 
-- `apps/frontend` — Клиентское одностраничное приложение (SPA).
-- `apps/backend` — REST API и WebSocket сервер.
-- `packages/shared-types` — Единый источник правды для TypeScript-типов, DTO и интерфейсов.
-- `packages/ui-kit` — Выделенная библиотека базовых UI-компонентов.
+Ассистент ходит в Groq, модель `qwen/qwen3.8-27b`. Суммы считает PostgreSQL через четыре инструмента, в промпт вся таблица не кладётся. Ответ приходит частями по SSE, пока модель его пишет.
 
-### Feature-Sliced Design (FSD)
-Слои клиентского приложения строго изолированы со следующей иерархией (снизу вверх):
-- `shared/` — Инфраструктурный код (httpClient, утилиты, общие конфиги).
-- `entities/` — Бизнес-сущности приложения (пользователь, транзакция, категория).
-- `features/` — Пользовательские действия (авторизация, добавление транзакций, импорт выписок).
-- `widgets/` — Крупные независимые блоки интерфейса.
-- `pages/` — Композиция страниц приложения.
-- `app/` — Инициализация приложения, провайдеры контекста и роутинг.
+PDF-выписку разбирает Gemini, модель `gemini-2.5-flash`. Пока запрос импорта не закончился, прогресс приходит по Socket.io.
 
-Соблюдение архитектурных правил FSD и отсутствия циклических импортов проверяется автоматическим линтером **Steiger**.
+## Как устроен репозиторий
 
-### Архитектурные решения (ADR)
-Ключевые технические решения задокументированы в формате [Architecture Decision Records](docs/adr/):
-- [ADR 0001: Запись архитектурных решений](docs/adr/0001-record-architecture-decisions.md)
-- [ADR 0002: Архитектурный подход FSD](docs/adr/0002-feature-sliced-design.md)
-- [ADR 0003: Хранение JWT в httpOnly cookies](docs/adr/0003-jwt-in-httponly-cookies.md)
-- [ADR 0004: Монорепозиторий и общие типы](docs/adr/0004-monorepo-structure-npm-workspaces.md)
-- [ADR 0005: ИИ-парсинг PDF и WebSockets](docs/adr/0005-ai-pdf-parsing-gemini-and-websockets.md)
-- [ADR 0006: Стратегия тестирования](docs/adr/0006-testing-strategy-vitest-and-playwright.md)
-- [ADR 0007: AI-ассистент, Function Calling и SSE стриминг](docs/adr/0007-ai-assistant-agentic-loop-and-sse.md)
+npm workspaces:
 
----
+- `apps/frontend` — SPA
+- `apps/backend` — API и Socket.io
+- `packages/shared-types` — общие типы
+- `packages/ui-kit` — кнопки и прочие базовые компоненты, Storybook
 
-## Технологический стек
+Фронтенд разложен по FSD: `shared`, `entities`, `features`, `widgets`, `pages`, `app`. Импорты между слоями проверяет Steiger.
 
-### Frontend
-- **Core**: React 19, TypeScript, Vite
-- **State Management**: TanStack Query v5 (серверный стейт и кэш), Zustand (клиентский UI-стейт)
-- **Forms & Validation**: React Hook Form, Zod
-- **Styling**: CSS Modules, Vanilla CSS (Design Tokens, Dark/Light theme)
-- **Visualization**: Recharts
-- **Streaming & Markdown**: @microsoft/fetch-event-source, react-markdown
+Решения, которые уже не хочется восстанавливать по коду, лежат в [docs/adr](docs/adr):
 
-### Backend
-- **Core**: Node.js, Express.js, TypeScript
-- **Database & ORM**: PostgreSQL, Prisma ORM
-- **Real-time & AI**: Socket.io, Google Gemini 1.5/2.5 Flash API, Groq SDK (Qwen 2.5)
-- **Email**: Resend API
-- **Security**: bcrypt, Helmet.js, express-rate-limit, cors
+- [1. Формат ADR](docs/adr/0001-record-architecture-decisions.md)
+- [2. FSD](docs/adr/0002-feature-sliced-design.md)
+- [3. JWT в httpOnly-куке](docs/adr/0003-jwt-in-httponly-cookies.md)
+- [4. Монорепозиторий и shared-types](docs/adr/0004-monorepo-structure-npm-workspaces.md)
+- [5. Импорт PDF](docs/adr/0005-ai-pdf-parsing-gemini-and-websockets.md)
+- [6. Тесты](docs/adr/0006-testing-strategy-vitest-and-playwright.md)
+- [7. Ассистент](docs/adr/0007-ai-assistant-agentic-loop-and-sse.md)
+- [8. Демо-вход](docs/adr/0008-demo-login-without-ai.md)
 
-### Testing & Tooling
-- **Unit & Integration**: Vitest, React Testing Library
-- **E2E Testing**: Playwright (Desktop & Mobile viewports)
-- **Code Quality**: ESLint, Steiger (FSD Linter)
+## Стек
 
----
+Фронтенд: React 19, TypeScript, Vite, TanStack Query, Zustand, React Hook Form, Zod, CSS Modules, Recharts.
+
+Бэкенд: Node.js 22, Express, PostgreSQL, Prisma, Socket.io, Groq SDK, Gemini, Resend.
+
+Тесты: Vitest, React Testing Library, Playwright. Линт: ESLint и Steiger.
 
 ## Локальный запуск
 
-### 1. Установка зависимостей
+Нужны Node.js 22, npm и запущенный Docker.
+
 ```bash
 npm install
 ```
 
-### 2. Переменные окружения
-Создайте файлы `.env` в папках `apps/backend` и `apps/frontend` на основе примеров.
+Скопируй примеры и замени в них пустые значения.
 
-`apps/backend/.env`:
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/finance_tracker?schema=public"
-JWT_SECRET="your_jwt_secret_key"
-PORT=3000
-RESEND_API_KEY="your_resend_api_key"
-CORS_ORIGIN="http://localhost:5173"
-GEMINI_API_KEY="your_gemini_api_key"
-GEMINI_API_BASE_URL="https://someurl.com"
-GEMINI_MODEL="gemini-2.5-flash"
-TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
-GROQ_API_KEY="your_groq_api_key"
-GROQ_API_BASE_URL="https://someurl.com"
+```bash
+cp apps/backend/.env.example apps/backend/.env
+cp apps/frontend/.env.example apps/frontend/.env
 ```
 
-`apps/frontend/.env`:
+В `apps/backend/.env` для локальной базы поставь:
+
+```env
+DATABASE_URL="postgresql://login:password@localhost:5432/finance_tracker?schema=public"
+JWT_SECRET="local-dev-secret"
+PORT=3000
+CORS_ORIGIN="http://localhost:5173"
+GEMINI_MODEL="gemini-2.5-flash"
+```
+
+Пустой `JWT_SECRET` не даст серверу стартовать. На проде секрет должен быть не короче 32 символов, локально хватает любой непустой строки.
+
+Без ключей ниже сервер всё равно стартует, и демо-вход открывается.
+
+- `RESEND_API_KEY` отправляет письмо с кодом регистрации. Без него регистрация создаст пользователя, но письмо не уйдёт.
+- `GEMINI_API_KEY` нужен для импорта PDF. Без ключа импорт вернёт ошибку.
+- `GROQ_API_KEY` нужен для ассистента. Без ключа запрос к Groq не пройдёт.
+- `TELEGRAM_BOT_TOKEN` нужен только для входа через Telegram. Кнопки в интерфейсе нет. Если токен пустой, этот вход отвечает 503.
+
+`GEMINI_API_BASE_URL` и `GROQ_API_BASE_URL` — не ключи. Это адрес сервера, который принимает запрос вместо официального API. Оставь их пустыми: клиенты пойдут на адреса Gemini и Groq по умолчанию. Свой адрес пиши только если до этих API нет прямого доступа и запрос идёт через прокси.
+
+В `apps/frontend/.env`:
+
 ```env
 VITE_API_URL="http://localhost:3000/api"
-VITE_TELEGRAM_BOT_USERNAME="your_bot_username"
-VITE_SENTRY_DSN="your_sentry_dsn"
-SENTRY_AUTH_TOKEN="your_sentry_auth_token"
 ```
 
-### 3. База данных
-Для запуска PostgreSQL используется Docker:
+`VITE_SENTRY_DSN` и `SENTRY_AUTH_TOKEN` для локального запуска не нужны.
+
+Подними только Postgres. `docker compose up -d` без имени сервиса соберёт ещё и контейнеры приложения и займёт порт 3000.
+
 ```bash
-docker compose up -d
+docker compose up -d db
 ```
 
-Применение миграций и генерация Prisma Client:
+Пользователь, пароль и имя базы в этой команде берутся из значений по умолчанию в `docker-compose.yml`: `login`, `password`, `finance_tracker`. Они должны совпасть с `DATABASE_URL`.
+
+Миграции из каталога бэкенда. `prisma migrate dev` заодно генерирует клиент.
+
 ```bash
 cd apps/backend
 npx prisma migrate dev
-npx prisma generate
 cd ../..
 ```
 
-> **Примечание**: Если при выполнении `npx prisma migrate dev` возникает ошибка рассинхронизации локальной базы данных, сбросьте состояние БД командой `npx prisma migrate reset`.
+Если локальная база разошлась с историей миграций, из `apps/backend`: `npx prisma migrate reset`.
 
-### 4. Запуск приложений
-Запуск бэкенда и фронтенда в режиме разработки:
+Два терминала:
 
-Сервер:
 ```bash
-npm run dev --workspace=apps/backend
+npm run dev --workspace=@finance/backend
+npm run dev --workspace=@finance/frontend
 ```
 
-Клиент:
+Приложение: [http://localhost:5173](http://localhost:5173).
+
+Storybook ui-kit:
+
 ```bash
-npm run dev --workspace=apps/frontend
+npm run storybook --workspace=@finance/ui-kit
 ```
 
-Приложение будет доступно по адресу: `http://localhost:5173`.
+Он откроется на [http://localhost:6006](http://localhost:6006).
 
----
+## Проверки
 
-## Тестирование и линтинг
+Юнит-тесты, линт и typecheck базы не требуют. E2E ждёт уже запущенные фронтенд на порту 5173 и бэкенд на порту 3000. Своих серверов Playwright не поднимает.
 
-Запуск юнит и интеграционных тестов:
 ```bash
-npm run test --workspace=apps/frontend
+npm run test --workspace=@finance/frontend
+npm run test:e2e --workspace=@finance/frontend
+npm run lint --workspace=@finance/frontend
+npm run typecheck --workspace=@finance/backend
+npm run test --workspace=@finance/ui-kit
 ```
 
-Запуск E2E тестов Playwright:
-```bash
-npm run test:e2e --workspace=apps/frontend
-```
+Тесты фронтенда в режиме Vitest watch. Для одного прогона добавь `-- --run`. E2E гоняет Playwright в Chromium, Firefox, WebKit, Mobile Chrome и Mobile Safari.
 
-Запуск линтеров (ESLint + Steiger FSD Linter):
+Интерфейс Vitest и интерфейс Playwright:
+
 ```bash
-npm run lint --workspace=apps/frontend
+npm run test:ui --workspace=@finance/frontend
+npm run test:e2e:ui --workspace=@finance/frontend
 ```

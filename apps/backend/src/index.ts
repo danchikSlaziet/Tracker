@@ -19,8 +19,22 @@ import { Server } from 'socket.io'
 import jwt from 'jsonwebtoken'
 import { parseCookie } from 'cookie'
 import { assistantRouter } from './routes/assistant.route'
+import { requireVerified } from './middleware/requireVerified.middleware'
+import { rejectDemoAi } from './middleware/rejectDemoAi.middleware'
 
-// ебучее подключение к бд в 7-ой Призме
+const jwtSecret = process.env.JWT_SECRET?.trim()
+
+if (!jwtSecret) {
+  console.error('Не задан JWT_SECRET')
+  process.exit(1)
+}
+
+if (process.env.NODE_ENV === 'production' && jwtSecret.length < 32) {
+  console.error('JWT_SECRET короче 32 символов')
+  process.exit(1)
+}
+
+// подключение к бд в 7-ой Призме
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
@@ -63,27 +77,49 @@ app.get('/api/health', (req, res) => {
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,                   // максимум 1000 запросов с одного IP за окно
+  max: 60,                   // 60 запросов с одного IP за окно
   message: { error: 'Слишком много попыток, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
+})
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Слишком много попыток ввода кода, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
 })
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
   message: { error: 'Слишком много запросов к API, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
 })
 
 const assistantLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Слишком много запросов к AI-ассистенту, попробуйте позже' },
+  skip: () => process.env.NODE_ENV === 'test',
 })
 
+app.use('/api/auth/verify-otp', otpLimiter)
 app.use('/api/auth', authLimiter, authRouter)
-app.use('/api/transactions', authMiddleware, apiLimiter, transactionsRouter)
-app.use('/api/categories', authMiddleware, apiLimiter, categoriesRouter)
-app.use('/api/user', authMiddleware, apiLimiter, userRouter)
-app.use('/api/assistant', authMiddleware, assistantLimiter, assistantRouter)
+app.use('/api/transactions', authMiddleware, apiLimiter, requireVerified, transactionsRouter)
+app.use('/api/categories', authMiddleware, apiLimiter, requireVerified, categoriesRouter)
+app.use('/api/user', authMiddleware, apiLimiter, requireVerified, userRouter)
+app.use('/api/assistant', authMiddleware, assistantLimiter, requireVerified, rejectDemoAi, assistantRouter)
 
+
+app.use((err: Error & { status?: number }, req: express.Request, res: express.Response, _next: express.NextFunction) => {  // обработчик ошибок (на фронт безопасные данные ошибок шлем)
+  const status = err.status && err.status < 500 ? err.status : 500
+
+  if (status === 500) {
+    console.error(`[${req.method} ${req.originalUrl}]`, err)
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' })
+    return
+  }
+
+  res.status(status).json({ error: err.message })
+})
 
 const server = createServer(app)
 
@@ -118,7 +154,8 @@ io.use((socket, next) => {
     socket.data.userId = payload.userId
     next()
   } catch (error) {
-    console.log('Socket Auth: Ошибка верификации JWT токена:', (error as any).message)
+    const message = error instanceof Error ? error.message : 'неизвестная ошибка'
+    console.log('Socket Auth: Ошибка верификации JWT токена:', message)
     next(new Error('Authentication error: Invalid token'))
   }
 })

@@ -2,6 +2,8 @@ import { useCategoryForm } from './useCategoryForm'
 import type { CategoryFormValues } from '../../model/categorySchema'
 import styles from './CategoryForm.module.css'
 import { Palette } from 'lucide-react'
+import { CATEGORY_ICONS } from '@finance/shared-types'
+import { CategoryIcon } from '@/entities/category'
 
 interface CategoryFormProps {
   initialData?: CategoryFormValues
@@ -27,6 +29,7 @@ export const CategoryForm = ({
 
   const currentType = watch('type')
   const currentColor = watch('color')
+  const currentIcon = watch('icon')
 
   const isCustomColor = Boolean(currentColor && !PRESET_COLORS.includes(currentColor))
 
@@ -66,18 +69,29 @@ export const CategoryForm = ({
         </div>
       </div>
 
-      <div className={styles.rowGroup}>
-        <div className={styles.iconGroup}>
-          <label htmlFor='icon'>Иконка</label>
-          <input id='icon' data-test-id="category-icon-input" className={styles.iconInput} {...register('icon')} placeholder="📁" maxLength={4} />
-          {errors.icon && <span className={styles.error}>{errors.icon.message}</span>}
-        </div>
+      <div className={styles.group}>
+        <label htmlFor="name">Название</label>
+        <input id="name" data-test-id="category-name-input" className={styles.input} {...register('name')} placeholder="Например: Кафе" />
+        {errors.name && <span className={styles.error}>{errors.name.message}</span>}
+      </div>
 
-        <div className={styles.nameGroup}>
-          <label htmlFor='name'>Название</label>
-          <input id='name' data-test-id="category-name-input" className={styles.input} {...register('name')} placeholder="Например: Кафе" />
-          {errors.name && <span className={styles.error}>{errors.name.message}</span>}
+      <div className={styles.group}>
+        <span className={styles.fieldLabel}>Иконка</span>
+        <div className={styles.iconGrid}>
+          {CATEGORY_ICONS.map((icon) => (
+            <button
+              key={icon}
+              type="button"
+              className={`${styles.iconButton} ${currentIcon === icon ? styles.selectedIcon : ''}`}
+              onClick={() => setValue('icon', icon)}
+              aria-label={icon}
+              aria-pressed={currentIcon === icon}
+            >
+              <CategoryIcon name={icon} color={currentIcon === icon ? currentColor : undefined} />
+            </button>
+          ))}
         </div>
+        {errors.icon && <span className={styles.error}>{errors.icon.message}</span>}
       </div>
 
       <div className={styles.group}>

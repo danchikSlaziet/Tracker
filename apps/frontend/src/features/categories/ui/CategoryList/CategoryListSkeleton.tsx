@@ -3,11 +3,11 @@ import styles from './CategoryList.module.css'
 
 export const CategoryListSkeleton = ({ count = 5 }: { count?: number }) => {
   return (
-    <div className={styles.list}>
+    <div className={styles.rows}>
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className={styles.card}>
           <div className={styles.left}>
-            <Skeleton width={42} height={42} borderRadius={8} />
+            <Skeleton width={18} height={18} borderRadius={4} />
             <div className={styles.info}>
               <Skeleton width={120} height={16} />
               <Skeleton width={60} height={12} style={{ marginTop: 4 }} />

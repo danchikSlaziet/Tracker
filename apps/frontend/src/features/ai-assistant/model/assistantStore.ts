@@ -11,6 +11,7 @@ interface AssistantState {
   toggleOpen: () => void
   sendMessage: (userText: string) => Promise<void>
   clearChat: () => void
+  reset: () => void
 }
 
 const INITIAL_MESSAGE: ChatMessage = {
@@ -89,7 +90,9 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
           onError: (err) => {
             const errStr = String(err || '')
             const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
-              ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+            ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+            : errStr && !errStr.includes('content-type') && !errStr.includes('Failed to fetch')
+              ? errStr
               : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
 
             set((state) => ({
@@ -97,17 +100,19 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
               currentToolStatus: null,
               messages: state.messages.map((msg) =>
                 msg.id === assistantTempId
-                  ? { ...msg, content: msg.content || `⚠️ ${friendlyMessage}` }
+                  ? { ...msg, content: msg.content || friendlyMessage }
                   : msg
               ),
             }))
           },
         }
       )
-    } catch (err: any) {
-      const errStr = String(err?.message || '')
+    } catch (err) {
+      const errStr = err instanceof Error ? err.message : ''
       const friendlyMessage = errStr.includes('429') || errStr.includes('Rate limit')
-        ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+      ? 'Слишком много запросов. Подождите 10–15 секунд и повторите.'
+      : errStr && !errStr.includes('content-type') && !errStr.includes('Failed to fetch')
+        ? errStr
         : 'Что-то пошло не так. Попробуйте повторить запрос чуть позже.'
 
       set((state) => ({
@@ -115,7 +120,7 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
         currentToolStatus: null,
         messages: state.messages.map((msg) =>
           msg.id === assistantTempId
-            ? { ...msg, content: msg.content || `⚠️ ${friendlyMessage}` }
+            ? { ...msg, content: msg.content || friendlyMessage }
             : msg
         ),
       }))
@@ -134,5 +139,8 @@ export const useAssistantStore = create<AssistantState>((set, get) => ({
       ],
       currentToolStatus: null,
     })
+  },
+  reset: () => {
+    set({ isOpen: false, messages: [INITIAL_MESSAGE], isLoading: false, currentToolStatus: null })
   },
 }))

@@ -2,7 +2,8 @@
     "name": "@finance/backend",
     "version": "1.0.0",
     "scripts": {
-        "dev": "tsx watch src/index.ts"
+        "dev": "tsx watch src/index.ts",
+        "typecheck": "tsc --noEmit"
     },
     "dependencies": {
         "@finance/shared-types": "*",
@@ -16,6 +17,7 @@
         "dotenv": "^17.4.2",
         "express": "^5.2.1",
         "express-rate-limit": "^8.5.2",
+        "file-type": "^22.3.0",
         "groq-sdk": "^1.6.0",
         "helmet": "^8.2.0",
         "jsonwebtoken": "^9.0.3",

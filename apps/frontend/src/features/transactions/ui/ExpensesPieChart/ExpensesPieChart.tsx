@@ -95,7 +95,7 @@ export function ExpensesPieChart({ transactions }: ExpensesPieChartProps) {
           <div className={styles.chartWrapper}>
             {/* Текст внутри бублика */}
             <div className={styles.centerOverlay}>
-              <span className={styles.centerLabel}>Всего расходов</span>
+              <span className={styles.centerLabel}>Расходы</span>
               <span className={styles.centerValue}>{formatMoney(totalExpenseKopecks)}</span>
             </div>
 
@@ -109,7 +109,7 @@ export function ExpensesPieChart({ transactions }: ExpensesPieChartProps) {
                   cy="50%"
                   innerRadius={68}
                   outerRadius={86}
-                  paddingAngle={3}
+                  paddingAngle={2}
                   cornerRadius={4}
                   stroke="none"
                 >
@@ -142,23 +142,17 @@ export function ExpensesPieChart({ transactions }: ExpensesPieChartProps) {
           </div>
         </div>
 
-        {/* Списочек категорий с процентами и барами */}
         <div className={styles.categoryList}>
           {categoryList.map((cat) => (
             <div key={cat.name} className={styles.categoryRow}>
-              <div className={styles.catInfo}>
-                <div className={styles.catNameRow}>
-                  <span className={styles.catDot} style={{ backgroundColor: cat.fill }} />
-                  <span className={styles.catName}>{cat.name}</span>
-                </div>
-                <span className={styles.catAmount}>{formatMoney(cat.amountKopecks)}</span>
+              <div className={styles.catNameRow}>
+                <span className={styles.catDot} style={{ backgroundColor: cat.fill }} />
+                <span className={styles.catName}>{cat.name}</span>
               </div>
-              <div className={styles.barTrack}>
-                <div
-                  className={styles.barFill}
-                  style={{ width: `${cat.percent}%`, backgroundColor: cat.fill }}
-                />
-              </div>
+              <span className={styles.catAmount}>
+                {formatMoney(cat.amountKopecks)}
+                <span className={styles.catPercent}>{cat.percent}%</span>
+              </span>
             </div>
           ))}
         </div>

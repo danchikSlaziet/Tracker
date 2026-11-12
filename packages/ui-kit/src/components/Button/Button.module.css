@@ -18,36 +18,32 @@
 
 /* Варианты */
 .primary {
-  background: #6c63ff;
-  color: #fff;
+  background: var(--accent-primary);
+  color: var(--accent-text);
 }
 .primary:hover:not(:disabled) {
-  background: #5b52e0;
+  background: var(--accent-hover);
 }
 
 .secondary {
-  background: #1e1e2e;
+  background: var(--bg-secondary);
   color: var(--text-primary);
-  border: 1px solid #2e2e42;
+  border: 1px solid var(--border-color);
 }
 .secondary:hover:not(:disabled) {
-  background: #2a2a3e;
+  background: var(--bg-primary);
 }
 
-.ghost {
-  background: transparent;
-  color: var(--text-primary);
-}
 .ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-primary);
 }
 
 .danger {
-  background: #ff4d6a;
-  color: #fff;
+  background: var(--danger);
+  color: #ffffff;
 }
 .danger:hover:not(:disabled) {
-  background: #e03558;
+  opacity: 0.9;
 }
 
 /* Размеры */

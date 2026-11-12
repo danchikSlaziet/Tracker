@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 
 interface TransactionFormValues {
   type: 'income' | 'expense';
@@ -34,7 +34,7 @@ export class TransactionsPage {
 
   async navigate() {
     await this.page.goto('/transactions');
-    await this.page.getByRole('heading', { name: 'Мои транзакции' }).waitFor({ state: 'visible' });
+    await this.page.getByRole('heading', { name: 'Транзакции' }).waitFor({ state: 'visible' });
   }
 
   async openCreateModal() {

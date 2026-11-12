@@ -3,7 +3,9 @@ import { z } from 'zod'
 import { prisma } from '../index'
 import multer from 'multer'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { PaginatedResponse } from '@finance/shared-types'
+import { CATEGORY_ICONS, PaginatedResponse } from '@finance/shared-types'
+import { Prisma } from '@prisma/client'
+import { rejectDemoAi } from '../middleware/rejectDemoAi.middleware'
 
 export const transactionsRouter = Router()
 
@@ -35,6 +37,21 @@ const getTransactionsSchema = z.object({
   search: z.string().optional(),
 })
 
+const aiTransactionSchema = z.object({
+  date: z.string().refine((value) => !isNaN(Date.parse(value)), 'Некорректная дата'),
+  amount: z.coerce.number().positive(),
+  type: z.enum(['income', 'expense']),
+  description: z.string().min(1),
+  categoryId: z.string().nullish(),
+  newCategory: z
+    .object({
+      name: z.string().min(1),
+      icon: z.string().optional(),
+      color: z.string().optional(),
+    })
+    .nullish(),
+})
+
 
 transactionsRouter.get('/', async (req, res) => {
   const userId = req.userId
@@ -47,28 +64,28 @@ transactionsRouter.get('/', async (req, res) => {
 
   const { page, limit, type, categoryId, dateFrom, dateTo, search } = parsed.data
 
-  const where: any = {
+  const where: Prisma.TransactionWhereInput = {
     userId,
   }
 
   if (type) {
-    where.type = type as 'income' | 'expense'
+    where.type = type
   }
 
   if (categoryId) {
-    where.categoryId = categoryId as string
+    where.categoryId = categoryId
   }
 
   if (dateFrom || dateTo) {
     where.date = {
-      ...(dateFrom ? { gte: new Date(dateFrom as string) } : {}),
-      ...(dateTo ? { lte: new Date(dateTo as string) } : {}),
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
     }
   }
 
   if (search) {
     where.description = {
-      contains: search as string,
+      contains: search,
       mode: 'insensitive' // lowercase == uppercase
     }
   }
@@ -90,7 +107,7 @@ transactionsRouter.get('/', async (req, res) => {
     }),
     prisma.transaction.count({ where })
   ])
-  const response: PaginatedResponse<any> = {
+  const response: PaginatedResponse<(typeof transactions)[number]> = {
     data: transactions,
     meta: {
       totalCount,
@@ -192,11 +209,11 @@ transactionsRouter.patch('/:id', async (req, res) => {
   res.status(200).json(updatedTransaction)
 })
 
-transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
+transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (req, res) => {
 
   const io = req.app.get('io')
 
-  const emitProgress = (percent: number, stage: string, metadata?: any) => {
+  const emitProgress = (percent: number, stage: string, metadata?: { importedCount?: number; error?: string }) => {
     if (io) {
       io.to(`user:${req.userId}`).emit('import:progress', { percent, stage, ...metadata })
     }
@@ -212,6 +229,12 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
     }
     if (!req.file) {
       res.status(400).json({ error: 'Файл не загружен' })
+      return
+    }
+    const { fileTypeFromBuffer } = await import('file-type')
+    const detected = await fileTypeFromBuffer(req.file.buffer)
+    if (detected?.mime !== 'application/pdf') {
+      res.status(400).json({ error: 'Файл не является PDF' })
       return
     }
 
@@ -253,7 +276,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
         - newCategory: Если categoryId равен null (категория не найдена в списке), создай для транзакции объект новой категории. Если categoryId заполнен, укажи null. 
           Объект newCategory должен содержать следующие поля:
           * name: Короткое и понятное название новой категории на русском языке (например, "Аптеки", "Спорт", "Аренда", "Коммунальные платежи", "Стриминг"). Максимум 2 слова.
-          * icon: Один наиболее подходящий emoji-символ (например, "💊" для аптек, "🍿" для кино).
+          * icon: один ключ строго из этого списка: ${CATEGORY_ICONS.join(', ')}.
           * color: Подходящий HEX-цвет для этой категории (например, "#ef4444").
 
         ПРАВИЛО ДЛЯ ВНУТРЕННИХ ПЕРЕВОДОВ:
@@ -272,7 +295,7 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
     const pdfPart = {
       inlineData: {
         data: req.file.buffer.toString('base64'),
-        mimeType: req.file.mimetype
+        mimeType: 'application/pdf',
       }
     }
 
@@ -308,117 +331,114 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
       return
     }
 
-    // 5. Ищем или создаем категорию "Неразобранное"
-    let unsortedCategory = categories.find(c => c.name === 'Неразобранное')
-    if (!unsortedCategory) {
-      unsortedCategory = await prisma.category.create({
-        data: {
-          name: 'Неразобранное',
-          icon: '📁',
-          color: '#94a3b8',
-          type: 'expense',
+    const validTransactions: z.infer<typeof aiTransactionSchema>[] = []
+    for (const item of parsedData) {
+      const result = aiTransactionSchema.safeParse(item)
+      if (result.success) validTransactions.push(result.data)
+    }
+    const skippedCount = parsedData.length - validTransactions.length
+
+    // добавление в БД
+    emitProgress(90, 'saving_database')
+    const created = await prisma.$transaction(async (tx) => { // служебный метод призмы $transaction для отката назад если один из шагов полетит
+      // 5. Ищем или создаем категорию "Неразобранное"
+      let unsortedCategory = categories.find(c => c.name === 'Неразобранное')
+      if (!unsortedCategory) {
+        unsortedCategory = await tx.category.create({
+          data: {
+            name: 'Неразобранное',
+            icon: 'uncategorized',
+            color: '#94a3b8',
+            type: 'expense',
+            userId
+          }
+        })
+      }
+
+      // 5.1 Обрабатываем новые категории, которые предложил ИИ
+
+      const categoryCache = new Map<string, string>()
+      for (const cat of categories) {
+        categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
+      }
+      categoryCache.set('неразобранное', unsortedCategory.id)
+
+      // через Map отсеиваем дубликаты внутри иишных категорий
+      const newCategoriesToCreate = new Map<string, { name: string, icon: string, color: string, type: 'income' | 'expense' }>()
+
+      for (const t of validTransactions) {
+        if (!t.categoryId && t.newCategory && t.newCategory.name) {
+          const catName = t.newCategory.name.trim()
+          const catNameLower = catName.toLowerCase()
+
+          const rawIcon = t.newCategory.icon
+          const icon = rawIcon && (CATEGORY_ICONS as readonly string[]).includes(rawIcon)
+            ? rawIcon
+            : 'uncategorized'
+
+          // если такой категории еще нет в базе пользователя и мы ее еще не запланировали создать:
+          if (!categoryCache.has(catNameLower) && !newCategoriesToCreate.has(catNameLower)) {
+            newCategoriesToCreate.set(catNameLower, {
+              name: catName,
+              icon: icon,
+              color: t.newCategory.color || '#94a3b8',
+              type: t.type === 'income' ? 'income' : 'expense'
+            })
+          }
+        }
+      }
+
+      // создаем новые иишные категории
+      if (newCategoriesToCreate.size > 0) {
+        for (const catData of newCategoriesToCreate.values()) {
+          const newCat = await tx.category.create({ data: { ...catData, userId } })
+          categoryCache.set(newCat.name.toLowerCase().trim(), newCat.id)
+        }
+      }
+
+      // 6. готовим транзакции для сохранения
+      const transactionsData = validTransactions.map(t => {
+        let finalCategoryId = unsortedCategory!.id
+
+        if (t.categoryId && categories.some(c => c.id === t.categoryId)) {
+          // если ИИ выбрал существующую категорию
+          finalCategoryId = t.categoryId
+        } else if (t.newCategory && t.newCategory.name) {
+          // если ИИ предложил новую категорию — ищем её ID в нашем кэше созданных категорий
+          const catNameLower = t.newCategory.name.trim().toLowerCase()
+          const cachedId = categoryCache.get(catNameLower)
+          if (cachedId) {
+            finalCategoryId = cachedId
+          }
+        }
+
+        return {
+          type: t.type === 'income' ? 'income' : 'expense',
+          amount: Math.round((Number(t.amount) || 0) * 100), // в копейках
+          description: t.description || 'Импортированная транзакция',
+          date: t.date ? new Date(t.date) : new Date(),
+          categoryId: finalCategoryId,
           userId
         }
       })
-    }
-
-    // 5.1 Обрабатываем новые категории, которые предложил ИИ
-
-    const categoryCache = new Map<string, string>()
-    for (const cat of categories) {
-      categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
-    }
-    categoryCache.set('неразобранное', unsortedCategory.id)
-
-    // через Map отсеиваем дубликаты внутри иишных категорий
-    const newCategoriesToCreate = new Map<string, { name: string, icon: string, color: string, type: 'income' | 'expense' }>()
-
-    for (const t of parsedData) {
-      if (!t.categoryId && t.newCategory && t.newCategory.name) {
-        const catName = t.newCategory.name.trim()
-        const catNameLower = catName.toLowerCase()
-
-        // если такой категории еще нет в базе пользователя и мы ее еще не запланировали создать:
-        if (!categoryCache.has(catNameLower) && !newCategoriesToCreate.has(catNameLower)) {
-          newCategoriesToCreate.set(catNameLower, {
-            name: catName,
-            icon: t.newCategory.icon || '📁',
-            color: t.newCategory.color || '#94a3b8',
-            type: t.type === 'income' ? 'income' : 'expense'
-          })
-        }
-      }
-    }
-
-    // создаем новые иишные категории
-    if (newCategoriesToCreate.size > 0) {
-      // createMany в Prisma/Postgres не умеет возвращать сгенерированные ID записей (??? чзнх)
-      const createdCategories = await Promise.all(
-        Array.from(newCategoriesToCreate.values()).map(async (catData) => {
-          const newCat = await prisma.category.create({
-            data: {
-              name: catData.name,
-              icon: catData.icon,
-              color: catData.color,
-              type: catData.type,
-              userId
-            }
-          })
-          return newCat
-        })
-      )
-
-      // добавляем созданные категории в наш кэш, чтобы привязать их к транзакциям
-      for (const cat of createdCategories) {
-        categoryCache.set(cat.name.toLowerCase().trim(), cat.id)
-      }
-    }
-
-    // 6. готовим транзакции для сохранения
-    const transactionsData = parsedData.map(t => {
-      let finalCategoryId = unsortedCategory!.id
-
-      if (t.categoryId && categories.some(c => c.id === t.categoryId)) {
-        // если ИИ выбрал существующую категорию
-        finalCategoryId = t.categoryId
-      } else if (t.newCategory && t.newCategory.name) {
-        // если ИИ предложил новую категорию — ищем её ID в нашем кэше созданных категорий
-        const catNameLower = t.newCategory.name.trim().toLowerCase()
-        const cachedId = categoryCache.get(catNameLower)
-        if (cachedId) {
-          finalCategoryId = cachedId
-        }
-      }
-
-      return {
-        type: t.type === 'income' ? 'income' : 'expense',
-        amount: Math.round((Number(t.amount) || 0) * 100), // в копейках
-        description: t.description || 'Импортированная транзакция',
-        date: t.date ? new Date(t.date) : new Date(),
-        categoryId: finalCategoryId,
-        userId
-      }
-    })
-
-    emitProgress(90, 'saving_database')
-    // Массовое добавление в БД
-    const created = await prisma.transaction.createMany({
-      data: transactionsData
+      return tx.transaction.createMany({ data: transactionsData })
     })
     emitProgress(100, 'completed', { importedCount: created.count })
 
     res.json({
       message: 'Импорт завершен успешно',
       importedCount: created.count,
+      skippedCount
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Import error:', error)
+    const message = error instanceof Error ? error.message : 'Неизвестная ошибка'
 
     if (progressInterval) clearInterval(progressInterval)
-    emitProgress(0, 'failed', { error: error.message || 'Ошибка импорта' })
+    emitProgress(0, 'failed', { error: message || 'Ошибка импорта' })
 
 
-    const errorMessage = error.message || ''
+    const errorMessage = message || ''
 
     if (
       errorMessage.includes('User location is not supported') ||
@@ -432,8 +452,11 @@ transactionsRouter.post('/import', upload.single('file'), async (req, res) => {
     }
 
     // Проверяем, исчерпан ли лимит запросов (код 429 или статус RESOURCE_EXHAUSTED)
+    const status = typeof error === 'object' && error !== null && 'status' in error
+      ? error.status
+      : undefined
     if (
-      error.status === 429 ||
+      status === 429 ||
       errorMessage.includes('429') ||
       errorMessage.includes('RESOURCE_EXHAUSTED')
     ) {
