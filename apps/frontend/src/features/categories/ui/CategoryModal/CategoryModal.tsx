@@ -3,6 +3,7 @@ import { CategoryForm } from '../CategoryForm/CategoryForm'
 import type { CategoryFormValues } from '../../model/categorySchema'
 import type { Category } from '@/entities/category'
 import { X } from 'lucide-react'
+import { useEffect } from 'react'
 
 interface CategoryModalProps {
   isOpen: boolean
@@ -19,11 +20,20 @@ export function CategoryModal({
   onSubmit,
   isLoading
 }: CategoryModalProps) {
+  useEffect(() => {
+    if (!isOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
     <div className={styles.overlay} onClick={onClose} >
-      <div data-testid="category-modal" className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div data-testid="category-modal" role="dialog" aria-modal="true" className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
           <X size={18} />
         </button>

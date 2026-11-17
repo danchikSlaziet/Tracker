@@ -20,7 +20,7 @@ describe('Компонент LoginForm', () => {
     vi.mocked(useLogin).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
-    } as any)
+    } as never)
   })
 
   it('показывает ошибки валидации Zod, если отправить пустую форму', async () => {
@@ -43,7 +43,7 @@ describe('Компонент LoginForm', () => {
     vi.mocked(useLogin).mockReturnValue({
       mutate: mockMutate,
       isPending: true, 
-    } as any)
+    } as never)
 
     renderWithProviders(<LoginForm />, { route: ROUTES.LOGIN })
 
@@ -78,7 +78,7 @@ describe('Компонент LoginForm', () => {
     vi.mocked(useLogin).mockReturnValue({
       mutate: mockMutateWithError,
       isPending: false,
-    } as any)
+    } as never)
 
     renderWithProviders(<LoginForm />, { route: ROUTES.LOGIN })
 

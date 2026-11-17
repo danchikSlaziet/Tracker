@@ -5,12 +5,13 @@ import path from 'path'
 import { loadEnv } from 'vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { visualizer } from 'rollup-plugin-visualizer'
+import type { PluginOption } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
-  const plugins: any[] = [react()]
+  const plugins: PluginOption[] = [react()]
 
   if (env.SENTRY_AUTH_TOKEN) {
     plugins.push(

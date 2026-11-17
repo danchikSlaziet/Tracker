@@ -1,5 +1,5 @@
 # Этап сборки React-приложения
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Передаем API URL бэкенда на этапе сборки (он запишется в бандл)

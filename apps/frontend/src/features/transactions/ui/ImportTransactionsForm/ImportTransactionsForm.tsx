@@ -36,10 +36,6 @@ export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportT
   const isImporting = isPending || (importProgress !== null && activeStages.includes(importProgress.stage))
 
   useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Фронтенд успешно подключился к сокету! ID:', socket.id)
-    })
-
     socket.on('import:progress', (data) => {
       setImportProgress(data)
       if (data?.stage === 'completed') {
@@ -50,7 +46,6 @@ export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportT
     })
 
     return () => {
-      socket.off('connect')
       socket.off('import:progress')
     }
   }, [])

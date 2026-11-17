@@ -59,7 +59,7 @@ describe('Виджет DashboardWidget', () => {
     vi.mocked(getTransactions).mockResolvedValue({
       data: mockTransactions,
       meta: { total: 2, page: 1, limit: 20, totalPages: 1 }
-    } as any)
+    } as never)
   })
 
   it('рассчитывает и выводит Баланс, Доходы и Расходы', async () => {

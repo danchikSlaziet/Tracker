@@ -72,11 +72,12 @@ const deleteStaleDemoUsers = async () => { // удаление старых де
   await prisma.user.deleteMany({ where: { id: { in: ids } } })
 }
 
-authRouter.post('/register', async (req, res): Promise<any> => {
+authRouter.post('/register', async (req, res): Promise<void> => {
   // Валидируем тело запроса
   const parsed = authBodySchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message })
+    res.status(400).json({ error: parsed.error.issues[0].message })
+    return
   }
 
   const { email, password } = parsed.data
@@ -85,7 +86,8 @@ authRouter.post('/register', async (req, res): Promise<any> => {
 
   if (existingUser) {
     if (existingUser.isVerified) {
-      return res.status(409).json({ error: 'Пользователь с таким email уже существует' })
+      res.status(409).json({ error: 'Пользователь с таким email уже существует' })
+      return
     } else {
       // защита от рега на чужую почту неподтвержденную
       await prisma.transaction.deleteMany({ where: { userId: existingUser.id } })
@@ -135,15 +137,17 @@ authRouter.post('/register', async (req, res): Promise<any> => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   })
 
-  return res.status(201).json(response)
+  res.status(201).json(response)
+  return
 })
 
 
-authRouter.post('/login', async (req, res): Promise<any> => {
+authRouter.post('/login', async (req, res): Promise<void> => {
   // Валидируем тело запроса
   const parsed = authBodySchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message })
+    res.status(400).json({ error: parsed.error.issues[0].message })
+    return
   }
 
   const { email, password } = parsed.data
@@ -151,17 +155,20 @@ authRouter.post('/login', async (req, res): Promise<any> => {
   const user = await prisma.user.findUnique({ where: { email } })
 
   if (!user) {
-    return res.status(401).json({ error: 'Неверный email или пароль' })
+    res.status(401).json({ error: 'Неверный email или пароль' })
+    return
   }
 
   // зареган через Telegram
   if (!user.passwordHash) {
-    return res.status(400).json({ error: 'Для этого аккаунта настроен вход через Telegram' })
+    res.status(400).json({ error: 'Для этого аккаунта настроен вход через Telegram' })
+    return
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
   if (!isPasswordValid) {
-    return res.status(401).json({ error: 'Неверный email или пароль' })
+    res.status(401).json({ error: 'Неверный email или пароль' })
+    return
   }
 
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || '', { expiresIn: '7d' })
@@ -176,7 +183,8 @@ authRouter.post('/login', async (req, res): Promise<any> => {
   const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId, isDemo: user.isDemo }
   const response: AuthResponse = { user: responseUser }
 
-  return res.json(response)
+  res.json(response)
+  return
 })
 
 
@@ -191,11 +199,12 @@ authRouter.post('/logout', (req, res) => {
 })
 
 
-authRouter.get('/me', authMiddleware, async (req, res): Promise<any> => {
+authRouter.get('/me', authMiddleware, async (req, res): Promise<void> => {
   const userId = req.userId
 
   if (!userId) {
-    return res.status(401).json({ error: 'Не авторизован' })
+    res.status(401).json({ error: 'Не авторизован' })
+    return
   }
 
   const user = await prisma.user.findUnique({
@@ -204,13 +213,15 @@ authRouter.get('/me', authMiddleware, async (req, res): Promise<any> => {
   })
 
   if (!user) {
-    return res.status(401).json({ error: 'Пользователь не найден' })
+    res.status(401).json({ error: 'Пользователь не найден' })
+    return
   }
 
   const responseUser: UserDto = { id: user.id, email: user.email, isVerified: user.isVerified, avatarUrl: user.avatarUrl, telegramId: user.telegramId, isDemo: user.isDemo, }
   const response: AuthResponse = { user: responseUser }
 
-  return res.json(response)
+  res.json(response)
+  return
 })
 
 const verifyOtpSchema = z.object({
@@ -221,28 +232,33 @@ const resendOtpSchema = z.object({
   email: z.string().email('Некорректный email'),
 })
 
-authRouter.post('/verify-otp', async (req, res): Promise<any> => {
+authRouter.post('/verify-otp', async (req, res): Promise<void> => {
   const parsed = verifyOtpSchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message })
+    res.status(400).json({ error: parsed.error.issues[0].message })
+    return
   }
 
   const { email, code } = parsed.data
   const user = await prisma.user.findUnique({ where: { email } })
 
   if (!user) {
-    return res.status(404).json({ error: 'Пользователь не найден' })
+    res.status(404).json({ error: 'Пользователь не найден' })
+    return
   }
   if (user.isVerified) {
-    return res.status(400).json({ error: 'Email уже подтвержден' })
+    res.status(400).json({ error: 'Email уже подтвержден' })
+    return
   }
 
   if (user.otpCode !== code) {
-    return res.status(400).json({ error: 'Неверный код подтверждения' })
+    res.status(400).json({ error: 'Неверный код подтверждения' })
+    return
   }
 
   if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
-    return res.status(400).json({ error: 'Код устарел, запросите новый' })
+    res.status(400).json({ error: 'Код устарел, запросите новый' })
+    return
   }
 
   const updatedUser = await prisma.user.update({
@@ -255,24 +271,28 @@ authRouter.post('/verify-otp', async (req, res): Promise<any> => {
   })
 
   const responseUser: UserDto = { id: updatedUser.id, email: updatedUser.email, isVerified: updatedUser.isVerified, avatarUrl: updatedUser.avatarUrl, telegramId: updatedUser.telegramId, isDemo: user.isDemo, }
-  return res.json({ user: responseUser })
+  res.json({ user: responseUser })
+  return
 })
 
 
-authRouter.post('/resend-otp', async (req, res): Promise<any> => {
+authRouter.post('/resend-otp', async (req, res): Promise<void> => {
   const parsed = resendOtpSchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message })
+    res.status(400).json({ error: parsed.error.issues[0].message })
+    return
   }
 
   const { email } = parsed.data
   const user = await prisma.user.findUnique({ where: { email } })
 
   if (!user) {
-    return res.status(404).json({ error: 'Пользователь не найден' })
+    res.status(404).json({ error: 'Пользователь не найден' })
+    return
   }
   if (user.isVerified) {
-    return res.status(400).json({ error: 'Email уже подтвержден' })
+    res.status(400).json({ error: 'Email уже подтвержден' })
+    return
   }
 
   const otpCode = generateOTP()
@@ -285,26 +305,30 @@ authRouter.post('/resend-otp', async (req, res): Promise<any> => {
 
   sendVerificationEmail(user.email, otpCode)
 
-  return res.json({ message: 'Новый код отправлен на почту' })
+  res.json({ message: 'Новый код отправлен на почту' })
+  return
 })
 
-authRouter.post('/telegram', async (req, res): Promise<any> => {
+authRouter.post('/telegram', async (req, res): Promise<void> => {
 
   const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim()
 
   if (!botToken) {
-    return res.status(503).json({ error: 'Вход через Telegram не настроен' })
+    res.status(503).json({ error: 'Вход через Telegram не настроен' })
+    return
   }
 
   const parsed = telegramAuthSchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({ error: 'Некорректные данные от Telegram' })
+    res.status(400).json({ error: 'Некорректные данные от Telegram' })
+    return
   }
 
   const telegramData = parsed.data as TelegramAuthData
 
   if (!verifyTelegramHash(telegramData, botToken || '')) {
-    return res.status(401).json({ error: 'Невалидная подпись данных Telegram' })
+    res.status(401).json({ error: 'Невалидная подпись данных Telegram' })
+    return
   }
 
   const telegramId = String(telegramData.id)
@@ -354,14 +378,16 @@ authRouter.post('/telegram', async (req, res): Promise<any> => {
       isDemo: user.isDemo,
     }
 
-    return res.json({ user: responseUser })
+    res.json({ user: responseUser })
+    return
   } catch (error) {
     console.error('Ошибка авторизации через Telegram:', error)
-    return res.status(500).json({ error: 'Внутренняя ошибка сервера при авторизации' })
+    res.status(500).json({ error: 'Внутренняя ошибка сервера при авторизации' })
+    return
   }
 })
 
-authRouter.post('/demo', async (req, res): Promise<any> => {
+authRouter.post('/demo', async (req, res): Promise<void> => {
   await deleteStaleDemoUsers().catch((error) => {
     console.error('Не удалось удалить старых демо-пользователей:', error)
   })
@@ -425,5 +451,6 @@ authRouter.post('/demo', async (req, res): Promise<any> => {
     isDemo: user.isDemo,
   }
 
-  return res.json({ user: responseUser })
+  res.json({ user: responseUser })
+  return
 })

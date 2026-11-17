@@ -24,11 +24,11 @@ describe('Компонент CreateTransactionForm', () => {
     vi.mocked(useCreateTransaction).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
-    } as any)
+    } as never)
     vi.mocked(useCategories).mockReturnValue({
       data: [],
       isLoading: false
-    } as any)
+    } as never)
   })
 
   it('показывает ошибки с пустыми полями при отправке формы', async () => {
@@ -56,7 +56,7 @@ describe('Компонент CreateTransactionForm', () => {
         { id: 'cat-1', name: 'Еда', icon: '🍔', type: 'expense' }
       ],
       isLoading: false
-    } as any)
+    } as never)
 
     renderWithProviders(<CreateTransactionForm />, { route: ROUTES.TRANSACTIONS })
 

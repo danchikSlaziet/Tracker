@@ -398,16 +398,18 @@ const chatBodySchema = z.object({
   history: z.array(chatMessageSchema).optional().default([]),
 })
 
-assistantRouter.post('/chat', async (req, res): Promise<any> => {
+assistantRouter.post('/chat', async (req, res): Promise<void> => {
   const userId = req.userId
 
   if (!userId) {
-    return res.status(401).json({ error: 'Не авторизован' })
+    res.status(401).json({ error: 'Не авторизован' })
+    return
   }
 
   const parsed = chatBodySchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message })
+    res.status(400).json({ error: parsed.error.issues[0].message })
+    return
   }
 
   const { message, history } = parsed.data
