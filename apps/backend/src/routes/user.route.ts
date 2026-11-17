@@ -113,10 +113,11 @@ userRouter.post('/avatar', (req, res) => {
 })
 
 
-userRouter.delete('/avatar', async (req, res): Promise<any> => {
+userRouter.delete('/avatar', async (req, res): Promise<void> => {
   const userId = req.userId
   if (!userId) {
-    return res.status(401).json({ error: 'Не авторизован' })
+    res.status(401).json({ error: 'Не авторизован' })
+    return
   }
 
   try {
@@ -125,7 +126,8 @@ userRouter.delete('/avatar', async (req, res): Promise<any> => {
     })
 
     if (!user) {
-      return res.status(404).json({ error: 'Пользователь не найден' })
+      res.status(404).json({ error: 'Пользователь не найден' })
+      return
     }
 
     if (user.avatarUrl) {
@@ -148,9 +150,11 @@ userRouter.delete('/avatar', async (req, res): Promise<any> => {
       isDemo: updatedUser.isDemo
     }
 
-    return res.json({ user: responseUser })
+    res.json({ user: responseUser })
+    return
   } catch (error) {
     console.error('Ошибка при удалении аватара:', error)
-    return res.status(500).json({ error: 'Ошибка сервера при удалении аватара' })
+    res.status(500).json({ error: 'Ошибка сервера при удалении аватара' })
+    return
   }
 })

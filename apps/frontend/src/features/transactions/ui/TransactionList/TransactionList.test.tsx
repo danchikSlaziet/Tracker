@@ -25,12 +25,12 @@ describe('Компонент TransactionList.test', () => {
     vi.mocked(useUpdateTransactions).mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any)
+    } as never)
 
     vi.mocked(useDeleteTransaction).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
-    } as any)
+    } as never)
 
     vi.mocked(useInfiniteTransactions).mockReturnValue({
       data: {
@@ -63,7 +63,7 @@ describe('Компонент TransactionList.test', () => {
       hasNextPage: false,
       isFetchingNextPage: false,
       fetchNextPage: vi.fn()
-    } as any)
+    } as never)
 
   })
 

@@ -50,7 +50,7 @@ describe('Виджет CategoriesWidget', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(getCategories).mockResolvedValue(mockCategories as any)
+    vi.mocked(getCategories).mockResolvedValue(mockCategories as never)
     setWindowWidth(1024)
   })
 
@@ -79,7 +79,7 @@ describe('Виджет CategoriesWidget', () => {
   })
 
   it('вызывает createCategory при отправке формы', async () => {
-    vi.mocked(createCategory).mockResolvedValue({ id: 'cat-new' } as any)
+    vi.mocked(createCategory).mockResolvedValue({ id: 'cat-new' } as never)
     const user = userEvent.setup()
     renderWithProviders(<CategoriesWidget />)
 

@@ -52,20 +52,20 @@ describe('Интеграционный тест: TransactionWidget', () => {
       category: mockCategory
     }
 
-    vi.mocked(getCategories).mockResolvedValue([mockCategory] as any)
+    vi.mocked(getCategories).mockResolvedValue([mockCategory] as never)
 
-    // Once дает выстроить очередь, без него сразу будет мочиться mockResolvedValueOnce([newTransaction] as any)
+    // Once ставит ответы в очередь: каждый следующий вызов getTransactions получает следующий мок.
     vi.mocked(getTransactions).mockResolvedValueOnce({
       data: [],
       meta: { currentPage: 1, totalPages: 1, totalCount: 0, limit: 20 }
-    } as any)
+    } as never)
 
     vi.mocked(getTransactions).mockResolvedValueOnce({
       data: [newTransaction],
       meta: { currentPage: 1, totalPages: 1, totalCount: 1, limit: 20 }
-    } as any)
+    } as never)
 
-    vi.mocked(createTransaction).mockResolvedValue(newTransaction as any)
+    vi.mocked(createTransaction).mockResolvedValue(newTransaction as never)
 
     renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS })
 
@@ -101,18 +101,18 @@ describe('Интеграционный тест: TransactionWidget', () => {
       category: mockCategory
     }
 
-    vi.mocked(getCategories).mockResolvedValue([mockCategory] as any)
+    vi.mocked(getCategories).mockResolvedValue([mockCategory] as never)
 
     vi.mocked(getTransactions).mockResolvedValueOnce({
       data: [oldTransaction],
       meta: { currentPage: 1, totalPages: 1, totalCount: 1, limit: 20 }
-    } as any)
+    } as never)
     vi.mocked(getTransactions).mockResolvedValueOnce({
       data: [],
       meta: { currentPage: 1, totalPages: 1, totalCount: 0, limit: 20 }
-    } as any)
+    } as never)
 
-    vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" } as any)
+    vi.mocked(deleteTransaction).mockResolvedValue({ "message": "Транзакция удалена" } as never)
 
     renderWithProviders(<TransactionWidget />, { route: ROUTES.TRANSACTIONS })
 

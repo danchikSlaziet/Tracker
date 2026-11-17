@@ -2,15 +2,25 @@ import { Bot, X, Trash2 } from 'lucide-react'
 import { useAssistantStore } from '../../model/assistantStore'
 import { AssistantChat } from '../AssistantChat/AssistantChat'
 import styles from './AssistantModal.module.css'
+import { useEffect } from 'react'
 
 export function AssistantModal() {
   const { isOpen, setIsOpen, clearChat } = useAssistantStore()
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isOpen])
 
   if (!isOpen) return null
 
   return (
     <div className={styles.overlay} onClick={() => setIsOpen(false)}>
-      <div className={styles.window} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.window} role="dialog" aria-modal="true"  onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <div className={styles.headerTitle}>
             <div className={styles.iconBox}>

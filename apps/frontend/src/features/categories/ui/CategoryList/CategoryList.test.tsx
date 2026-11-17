@@ -47,12 +47,12 @@ describe('Компонент CategoryList', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(useDeleteCategory).mockReturnValue({ mutate: mockDelete } as any)
-    vi.mocked(useRestoreCategory).mockReturnValue({ mutate: mockRestore } as any)
+    vi.mocked(useDeleteCategory).mockReturnValue({ mutate: mockDelete } as never)
+    vi.mocked(useRestoreCategory).mockReturnValue({ mutate: mockRestore } as never)
   })
 
   it('рендерит список активных категорий', () => {
-    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as any)
+    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as never)
 
     renderWithProviders(<CategoryList onEdit={mockOnEdit} />)
 
@@ -61,7 +61,7 @@ describe('Компонент CategoryList', () => {
   })
 
   it('вызывает onEdit при клике на кнопку редактирования', async () => {
-    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as any)
+    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as never)
     const user = userEvent.setup()
 
     renderWithProviders(<CategoryList onEdit={mockOnEdit} />)
@@ -72,7 +72,7 @@ describe('Компонент CategoryList', () => {
   })
 
   it('вызывает удаление категории при клике на корзину', async () => {
-    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as any)
+    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as never)
     const user = userEvent.setup()
 
     renderWithProviders(<CategoryList onEdit={mockOnEdit} />)
@@ -83,7 +83,7 @@ describe('Компонент CategoryList', () => {
   })
 
   it('переключает список на удаленные категории при клике на чекбокс', async () => {
-    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as any)
+    vi.mocked(useCategories).mockReturnValue({ data: mockCategories, isLoading: false } as never)
     const user = userEvent.setup()
 
     renderWithProviders(<CategoryList onEdit={mockOnEdit} />)
@@ -96,7 +96,7 @@ describe('Компонент CategoryList', () => {
 
   it('вызывает восстановление удаленной категории при клике на кнопку восстановить', async () => {
     const deletedCategory = [{ ...mockCategories[0], isDeleted: true }]
-    vi.mocked(useCategories).mockReturnValue({ data: deletedCategory, isLoading: false } as any)
+    vi.mocked(useCategories).mockReturnValue({ data: deletedCategory, isLoading: false } as never)
     const user = userEvent.setup()
 
     renderWithProviders(<CategoryList onEdit={mockOnEdit} />)

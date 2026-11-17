@@ -21,7 +21,7 @@ describe('Компонент RegisterForm', () => {
     vi.mocked(useRegister).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
-    } as any)
+    } as never)
   })
 
   it('показывает ошибки валидации Zod, если отправить пустую форму', async () => {
@@ -43,7 +43,7 @@ describe('Компонент RegisterForm', () => {
     vi.mocked(useRegister).mockReturnValue({
       mutate: mockMutate,
       isPending: true,
-    } as any)
+    } as never)
 
     renderWithProviders(<RegisterForm />, { route: ROUTES.LOGIN })
 
@@ -88,7 +88,7 @@ describe('Компонент RegisterForm', () => {
     vi.mocked(useRegister).mockReturnValue({
       mutate: mockMutateWithError,
       isPending: false,
-    } as any)
+    } as never)
 
     renderWithProviders(<RegisterForm />, { route: ROUTES.REGISTER })
 
