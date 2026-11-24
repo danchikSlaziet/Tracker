@@ -36,13 +36,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       RESEND_API_KEY: ${RESEND_API_KEY}
       CORS_ORIGIN: ${CORS_ORIGIN}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
       PORT: 3000
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODEL: ${GEMINI_MODEL}
-      GEMINI_API_BASE_URL: ${GEMINI_API_BASE_URL}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      GROQ_API_KEY: ${GROQ_API_KEY}
-      GROQ_API_BASE_URL: ${GROQ_API_BASE_URL}
     depends_on:
       db:
         condition: service_healthy

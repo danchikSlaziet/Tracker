@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import styles from './Layout.module.css'
 import { useLogout, useMe } from '@/features/auth'
 import { ROUTES } from '@/shared/config'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { PageLoader, Avatar } from '@finance/ui-kit'
 import { ProfileModal } from '@/features/profile'
 import { ThemeSwitcher } from '@/features/theme'
@@ -41,6 +41,11 @@ export function Layout() {
     logout()
   }
 
+  const mainRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0)
+    window.scrollTo(0, 0)
+  }, [location.pathname])
 
   return (
     <div className={`${styles.root} ${isCollapsed ? styles.rootCollapsed : ''}`}>
@@ -184,7 +189,7 @@ export function Layout() {
       </aside>
 
       {/* контент */}
-      <main className={styles.main}>
+      <main ref={mainRef} className={styles.main}>
         <Suspense key={location.pathname} fallback={<PageLoader />}>
           <Outlet />
         </Suspense>

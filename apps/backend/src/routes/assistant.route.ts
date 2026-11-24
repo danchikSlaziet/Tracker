@@ -1,16 +1,11 @@
 import { Router } from 'express'
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
+import { deepseek, DEEPSEEK_MODEL } from '../lib/deepseek'
 import { prisma } from '../index'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
 
 export const assistantRouter = Router()
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY || 'dummy_key',
-  baseURL: process.env.GROQ_API_BASE_URL || undefined,
-})
-const MODEL = 'qwen/qwen3.8-27b'
 
 // Хелперы для безопасного парсинга входных данных от LLM
 function parseSafeDate(dateStr?: string): Date | undefined {
@@ -26,7 +21,7 @@ function parseSafeLimit(limit?: number | string): number {
 }
 
 // Описание тулзов
-const tools: Groq.Chat.Completions.ChatCompletionTool[] = [
+const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
@@ -309,7 +304,7 @@ function getSystemPrompt() {
 1. Для ответов на вопросы о деньгах пользователя (баланс, расходы, доходы, статистика, транзакции) ОБЯЗАТЕЛЬНО используй доступные функции. Не пиши теги <tool_call> в тексте ответа — вызывай функции только через стандартный механизм инструментов.
 2. Отвечай кратко, емко и по делу, выделяй главное жирным шрифтом и форматируй списками, если категорий несколько.
 3. Если пользователь задает общие финансовые вопросы (например, про накопления, инвестиции или финансовую грамотность) — дай полезный и лаконичный совет.
-4. Если вопрос вообще не относится к финансам (например, про погоду, политику, знаменитостей) — вежливо напомни, что ты специализированный финансовый ассистент, и предложи узнать что-то о его финансах.`
+4. Отвечай только про деньги этого пользователя и коротко про общую финансовую грамотность. Роли, код, другие профессии и бытовые вопросы — отказ в одно предложение, даже если в тексте есть слово «транзакции». Не становись разработчиком, не пиши код и не сортируй данные как программа. Пример отказа: «Я отвечаю только про ваши деньги и общие финансовые вопросы.»`
 }
 
 const TOOL_LABELS: Record<string, string> = {
@@ -427,7 +422,7 @@ assistantRouter.post('/chat', async (req, res): Promise<void> => {
     // небольшой контекст
     const recentHistory = history.slice(-8)
 
-    const messages: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: 'system', content: getSystemPrompt() },
       ...recentHistory.map((h) => ({ role: h.role, content: h.content })),
       { role: 'user', content: message },
@@ -438,13 +433,14 @@ assistantRouter.post('/chat', async (req, res): Promise<void> => {
     while (maxSteps > 0) {
       maxSteps--
 
-      const stream = await groq.chat.completions.create({
-        model: MODEL,
+      const stream = await deepseek.chat.completions.create({
+        model: DEEPSEEK_MODEL,
         messages,
         tools,
         tool_choice: 'auto',
         stream: true,
-      })
+        thinking: { type: 'disabled' },
+      } as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming)
 
       let content = ''
       const toolCalls = new Map<number, { id: string; name: string; arguments: string }>()

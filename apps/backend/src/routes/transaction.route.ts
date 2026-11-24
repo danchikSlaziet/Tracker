@@ -2,7 +2,9 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../index'
 import multer from 'multer'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import OpenAI from 'openai'
+import { deepseek, DEEPSEEK_MODEL } from '../lib/deepseek'
+import { extractPdfText } from '../lib/pdfText'
 import { CATEGORY_ICONS, PaginatedResponse } from '@finance/shared-types'
 import { Prisma } from '@prisma/client'
 import { rejectDemoAi } from '../middleware/rejectDemoAi.middleware'
@@ -12,8 +14,6 @@ export const transactionsRouter = Router()
 const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // ограничение 10 МБ
 })
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
-
 
 const createTransactionSchema = z.object({
   type: z.enum(['income', 'expense']),
@@ -238,8 +238,8 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
       return
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      res.status(500).json({ error: 'Gemini API key отсутствует :(' })
+    if (!process.env.DEEPSEEK_API_KEY) {
+      res.status(500).json({ error: 'Ключ DeepSeek отсутствует' })
       return
     }
 
@@ -254,17 +254,8 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
       .map(c => `- ID: ${c.id}, Название: "${c.name}", Тип: "${c.type}"`)
       .join('\n')
 
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      }
-    }, {
-      baseUrl: process.env.GEMINI_API_BASE_URL || undefined
-    })
-
     const prompt = `
-        Ты — точный ИИ-парсер банковских выписок. Твоя задача — извлечь список всех транзакций из прикрепленного PDF-документа банковской выписки.
+        Текст банковской выписки придёт следующим сообщением. Извлеки из него список всех транзакций.
         Документ может быть от любого банка (Т-Банк, Сбербанк, Альфа-Банк, ВТБ и т.д.).
 
         Извлеки следующие поля для каждой транзакции:
@@ -287,22 +278,15 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
         СПИСОК ДОСТУПНЫХ КАТЕГОРИЙ:
         ${categoriesListStr}
 
-        Верни строго валидный JSON-массив объектов с указанными полями. Не пиши никакого сопроводительного текста, только JSON.
+        Верни JSON-объект вида {"transactions":[...]}. Поле transactions — массив операций. Не пиши сопроводительный текст.
       `
 
+    emitProgress(20, 'reading_statement')
+    const statementText = await extractPdfText(req.file.buffer)
 
-    // 3. Переводим буфер файла в base64 для API
-    const pdfPart = {
-      inlineData: {
-        data: req.file.buffer.toString('base64'),
-        mimeType: 'application/pdf',
-      }
-    }
+    emitProgress(40, 'sending_to_model')
 
-
-    emitProgress(30, 'sending_to_gemini')
-
-    let currentPercent = 30
+    let currentPercent = 40
     progressInterval = setInterval(() => {
       if (currentPercent < 75) {
         currentPercent += 5
@@ -310,23 +294,40 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
       }
     }, 5000)
 
-    // 4. Отправляем запрос в ИИ
-    const result = await model.generateContent([prompt, pdfPart])
+    const completion = await deepseek.chat.completions.create({
+      model: DEEPSEEK_MODEL,
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content: statementText },
+      ],
+      response_format: { type: 'json_object' },
+      thinking: { type: 'disabled' },
+      max_tokens: 32768
+    } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming)
     if (progressInterval) clearInterval(progressInterval)
 
-    const responseText = result.response.text()
+    const responseText = completion.choices[0]?.message?.content ?? ''
+
+    if (completion.choices[0]?.finish_reason === 'length') {
+      emitProgress(0, 'failed', { error: 'Выписка слишком длинная, ответ модели оборвался' })
+      res.status(500).json({ error: 'Выписка слишком длинная, ответ модели оборвался' })
+      return
+    }
+
     emitProgress(80, 'parsing_data')
 
     let parsedData
     try {
-      parsedData = JSON.parse(responseText)
+      parsedData = JSON.parse(responseText).transactions
     } catch (e) {
-      console.error('Failed to parse Gemini output:', responseText)
+      console.error('Failed to parse model output: ', responseText)
+      emitProgress(0, 'failed', { error: 'Не удалось распарсить ответ нейросети' })
       res.status(500).json({ error: 'Не удалось распарсить ответ нейросети' })
       return
     }
 
     if (!Array.isArray(parsedData)) {
+      emitProgress(0, 'failed', { error: 'Нейросеть вернула некорректный формат данных' })
       res.status(500).json({ error: 'Нейросеть вернула некорректный формат данных' })
       return
     }
@@ -440,29 +441,18 @@ transactionsRouter.post('/import', rejectDemoAi, upload.single('file'), async (r
 
     const errorMessage = message || ''
 
-    if (
-      errorMessage.includes('User location is not supported') ||
-      errorMessage.includes('location is not supported') ||
-      errorMessage.includes('fetch failed')
-    ) {
-      res.status(403).json({
-        error: 'Не удалось подключиться к Google Gemini API.'
+    const status = typeof error === 'object' && error !== null && 'status' in error
+      ? error.status
+      : undefined
+    if (status === 429 || errorMessage.includes('429')) {
+      res.status(429).json({
+        error: 'Превышен лимит запросов к нейросети. Пожалуйста, подождите минуту и попробуйте снова.',
       })
       return
     }
 
-    // Проверяем, исчерпан ли лимит запросов (код 429 или статус RESOURCE_EXHAUSTED)
-    const status = typeof error === 'object' && error !== null && 'status' in error
-      ? error.status
-      : undefined
-    if (
-      status === 429 ||
-      errorMessage.includes('429') ||
-      errorMessage.includes('RESOURCE_EXHAUSTED')
-    ) {
-      res.status(429).json({
-        error: 'Превышен лимит запросов к нейросети. Пожалуйста, подождите минуту и попробуйте снова.'
-      })
+    if (errorMessage === 'В PDF нет текстового слоя') {
+      res.status(400).json({ error: errorMessage })
       return
     }
     res.status(500).json({ error: errorMessage || 'Ошибка сервера при импорте' })
