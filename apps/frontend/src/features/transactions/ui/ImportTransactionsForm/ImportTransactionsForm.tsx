@@ -10,7 +10,8 @@ import { getApiErrorMessage } from '@/shared/api'
 
 const stageLabels: Record<string, string> = {
   reading_file: 'Читаем файл и категории...',
-  sending_to_gemini: 'Отправляем в нейросеть...',
+  reading_statement: 'Разбираем текст выписки...',
+  sending_to_model: 'Отправляем в нейросеть...',
   analyzing: 'ИИ анализирует выписку...',
   parsing_data: 'Обрабатываем транзакции...',
   saving_database: 'Сохраняем в базу данных...',
@@ -31,8 +32,8 @@ export const ImportTransactionsForm = ({ onSuccess, showTitle = false }: ImportT
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { importProgress, setImportProgress } = useImportProgress()
-
-  const activeStages = ['reading_file', 'sending_to_gemini', 'analyzing', 'parsing_data', 'saving_database']
+  
+  const activeStages = ['reading_file', 'reading_statement', 'sending_to_model', 'analyzing', 'parsing_data', 'saving_database']
   const isImporting = isPending || (importProgress !== null && activeStages.includes(importProgress.stage))
 
   useEffect(() => {
